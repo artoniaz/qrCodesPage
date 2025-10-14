@@ -70,8 +70,8 @@ export default function ProductPage() {
   // Sort variants by type (numeric value) in ascending order
   const sortedVariants = variants
     ? [...variants].sort((a, b) => {
-        const typeA = parseInt(a.type) || 0;
-        const typeB = parseInt(b.type) || 0;
+        const typeA = parseInt(a.type || "0") || 0;
+        const typeB = parseInt(b.type || "0") || 0;
         return typeA - typeB;
       })
     : [];
