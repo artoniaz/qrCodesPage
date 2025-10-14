@@ -1,0 +1,320 @@
+.product-page {
+  min-height: 100vh;
+  width: 100%;
+  display: flex;
+  justify-content: flex-start;
+  align-items: flex-start;
+  padding: 25px;
+  background-image: linear-gradient(rgba(255, 255, 255, 0.5), rgba(255, 255, 255, 0.5)), url('../assets/soft-grey-organic-leaves-background-with-text-space_1017-60373.jpg');
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  overflow-y: auto;
+}
+
+.loader-container {
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  text-align: center;
+  background: transparent;
+  padding: 0;
+  border-radius: 0;
+  box-shadow: none;
+}
+
+.loader {
+  width: 60px;
+  height: 60px;
+  margin: 0 auto 1.5rem;
+  position: relative;
+  display: inline-block;
+}
+
+.loader::before,
+.loader::after {
+  content: '';
+  position: absolute;
+  border-radius: 50%;
+  animation: pulse 2s ease-in-out infinite;
+}
+
+.loader::before {
+  width: 60px;
+  height: 60px;
+  border: 3px solid #667eea;
+  box-shadow: 0 0 20px rgba(102, 126, 234, 0.3);
+}
+
+.loader::after {
+  width: 60px;
+  height: 60px;
+  border: 3px solid transparent;
+  border-top-color: #764ba2;
+  border-right-color: #764ba2;
+  animation: spin 1.5s cubic-bezier(0.68, -0.55, 0.265, 1.55) infinite;
+}
+
+@keyframes spin {
+  0% {
+    transform: rotate(0deg);
+  }
+  100% {
+    transform: rotate(360deg);
+  }
+}
+
+@keyframes pulse {
+  0%, 100% {
+    transform: scale(1);
+    opacity: 1;
+  }
+  50% {
+    transform: scale(1.1);
+    opacity: 0.7;
+  }
+}
+
+.loader-container p {
+  color: #444;
+  font-size: 1.1rem;
+  margin: 0;
+  font-weight: 500;
+  letter-spacing: 0.3px;
+}
+
+.error-container {
+  background: white;
+  padding: 2rem;
+  border-radius: 12px;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+  text-align: center;
+}
+
+.error-container h2 {
+  color: #e53e3e;
+  margin-top: 0;
+}
+
+.error-container p {
+  color: #333;
+}
+
+.product-container {
+  background: transparent;
+  padding: calc(0.75rem + 15px);
+  border-radius: 0;
+  box-shadow: none;
+  max-width: 900px;
+  width: 100%;
+  position: relative;
+  z-index: 1;
+}
+
+.product-title {
+  color: #000;
+  margin: 0 0 0.75rem 0;
+  font-size: 2rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: -0.01em;
+  line-height: 1.1;
+  text-align: left;
+}
+
+.product-info {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  margin-bottom: 1rem;
+}
+
+.info-section {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+
+.info-section.description {
+  margin-top: 0.5rem;
+}
+
+.info-label {
+  color: #444;
+  font-size: 0.875rem;
+  font-weight: 400;
+  text-align: left;
+}
+
+.info-value {
+  color: #000;
+  font-size: 1.5rem;
+  font-weight: 700;
+  line-height: 1.2;
+  text-align: left;
+}
+
+.info-section.description .info-value {
+  color: #444;
+  font-size: 0.95rem;
+  font-weight: 400;
+  line-height: 1.4;
+}
+
+.variants-section {
+  margin-top: 1rem;
+  border-top: none;
+  padding-top: 0.5rem;
+}
+
+.variants-title {
+  color: #000;
+  font-size: 1.125rem;
+  font-weight: 600;
+  margin: 0 0 1rem 0;
+}
+
+.variant-card {
+  background: transparent;
+  padding: 0;
+  margin-bottom: 1rem;
+  border-radius: 0;
+  border-bottom: none;
+  padding-bottom: 0.5rem;
+}
+
+.variant-card:last-child {
+  border-bottom: none;
+}
+
+.variant-header {
+  margin-bottom: 0.5rem;
+  text-align: left;
+}
+
+.variant-title {
+  color: #000;
+  font-size: 0.875rem;
+  font-weight: 600;
+  text-align: left;
+  display: block;
+  width: 100%;
+}
+
+.variant-details {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+
+.variant-row {
+  display: grid;
+  grid-template-columns: 140px 1fr;
+  align-items: baseline;
+  gap: 0.5rem;
+}
+
+.variant-label {
+  color: #444;
+  font-size: 1rem;
+  font-weight: 400;
+  flex-shrink: 0;
+  text-align: left;
+}
+
+.variant-value {
+  color: #000;
+  font-size: 1rem;
+  font-weight: 400;
+  text-align: left;
+  word-break: break-word;
+}
+
+.variant-value.price {
+  font-weight: 700;
+  font-size: 1.125rem;
+}
+
+@media (max-width: 768px) {
+  .product-page {
+    padding: calc(0.5rem + 5px);
+    height: 100vh;
+    overflow-y: auto;
+    overflow-x: hidden;
+  }
+
+  .product-container {
+    padding: calc(0.5rem + 5px);
+    height: auto;
+    max-height: 100%;
+  }
+
+  .product-title {
+    font-size: 1.5rem;
+    margin-bottom: 0.5rem;
+  }
+
+  .product-info {
+    gap: 0.35rem;
+    margin-bottom: 0.75rem;
+  }
+
+  .info-value {
+    font-size: 1.1rem;
+  }
+
+  .info-section.description .info-value {
+    font-size: 0.8rem;
+  }
+
+  .variants-section {
+    margin-top: 0.5rem;
+    padding-top: 0.25rem;
+  }
+
+  .variants-title {
+    font-size: 1rem;
+    margin-bottom: 0.5rem;
+  }
+
+  .variant-card {
+    margin-bottom: 0.75rem;
+    padding-bottom: 0.25rem;
+  }
+
+  .variant-header {
+    margin-bottom: 0.35rem;
+  }
+
+  .variant-title {
+    font-size: 0.75rem;
+  }
+
+  .variant-details {
+    gap: 0.2rem;
+  }
+
+  .variant-row {
+    gap: 0.5rem;
+    grid-template-columns: 110px 1fr;
+  }
+
+  .variant-label,
+  .variant-value {
+    font-size: 0.75rem;
+  }
+
+  .variant-value.price {
+    font-size: 0.8rem;
+  }
+
+  .variant-value {
+    text-align: left;
+  }
+}
