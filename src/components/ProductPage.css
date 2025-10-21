@@ -274,16 +274,19 @@
 @media (max-width: 768px) {
   .product-page {
     padding: 0;
-    height: 100vh;
+    min-height: 100vh;
+    height: auto;
     overflow-y: auto;
     overflow-x: hidden;
+    -webkit-overflow-scrolling: touch;
   }
 
   .product-container {
     padding: 15px;
-    padding-bottom: 30px;
+    padding-bottom: 50px;
     height: auto;
-    max-height: 100%;
+    max-height: none;
+    min-height: 100%;
   }
 
   .product-title {
