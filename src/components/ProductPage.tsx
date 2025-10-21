@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
 import { fetchProduct, type ProductWithVariants } from "../services/airtable";
+import WorktopCalculator from "./WorktopCalculator";
 import "./ProductPage.css";
 
 export default function ProductPage() {
@@ -63,18 +64,9 @@ export default function ProductPage() {
     );
   }
 
-  const { product, variants } = productData;
+  const { product } = productData;
   const isWorktop = product.category.toLowerCase() === "blat";
   const isPanel = product.category.toLowerCase() === "płyta";
-
-  // Sort variants by type (numeric value) in ascending order
-  const sortedVariants = variants
-    ? [...variants].sort((a, b) => {
-        const typeA = parseInt(a.type || "0") || 0;
-        const typeB = parseInt(b.type || "0") || 0;
-        return typeA - typeB;
-      })
-    : [];
 
   return (
     <div className="product-page">
@@ -117,7 +109,7 @@ export default function ProductPage() {
                 </div>
 
                 <div className="variant-row">
-                  <span className="variant-label">Format sprzedaży:</span>
+                  <span className="variant-label">Forma sprzedaży:</span>
                   <span className="variant-value">{product.sellUnit}</span>
                 </div>
 
@@ -125,50 +117,63 @@ export default function ProductPage() {
                   <span className="variant-label">Grubość:</span>
                   <span className="variant-value">{product.thickness}mm</span>
                 </div>
+
+                {product.producer && (
+                  <div className="variant-row">
+                    <span className="variant-label">Producent:</span>
+                    <span className="variant-value">{product.producer}</span>
+                  </div>
+                )}
               </div>
             </div>
           </div>
         )}
 
-        {isWorktop && sortedVariants && sortedVariants.length > 0 && (
-          <div className="variants-section">
-            {sortedVariants.map((variant) => (
-              <div key={variant.id} className="variant-card">
-                <div className="variant-header">
-                  <span className="variant-title">
-                    wariant: blat {variant.type}
-                  </span>
-                </div>
-
-                <div className="variant-details">
-                  <div className="variant-row">
-                    <span className="variant-label">Cena:</span>
-                    <span className="variant-value price">
-                      {(variant.price * 1.23).toFixed(2)} zł brutto/szt.
-                    </span>
-                  </div>
-
-                  <div className="variant-row">
-                    <span className="variant-label">Wymiary:</span>
-                    <span className="variant-value">
-                      {variant.width ? `${variant.width}mm` : "undefinedmm"} x{" "}
-                      {variant.height ? `${variant.height}mm` : "undefinedmm"}
-                    </span>
-                  </div>
-
-                  <div className="variant-row">
-                    <span className="variant-label">Forma sprzedaży:</span>
-                    <span className="variant-value">{variant.sellUnit}</span>
-                  </div>
-
-                  <div className="variant-row">
-                    <span className="variant-label">Grubość:</span>
-                    <span className="variant-value">{variant.thickness}mm</span>
-                  </div>
-                </div>
+        {isWorktop && (
+          <>
+            <div className="worktop-basic-info">
+              <div className="info-row">
+                <span className="info-label">Grubość:</span>
+                <span className="info-value-simple">{product.thickness}mm</span>
               </div>
-            ))}
-          </div>
+              {product.producer && (
+                <div className="info-row">
+                  <span className="info-label">Producent:</span>
+                  <span className="info-value-simple">{product.producer}</span>
+                </div>
+              )}
+              <div className="info-row">
+                <span className="info-label">Dostępne szerokości:</span>
+                <span className="info-value-simple">
+                  {[
+                    product.price_600_m_1 || product.price_600_m_2 ? "600mm" : null,
+                    product.price_635_m_1 ? "635mm" : null,
+                    product.price_650_m_1 ? "650mm" : null,
+                    product.price_700_m_1 || product.price_700_m_2 ? "700mm" : null,
+                    product.price_800_m_1 || product.price_800_m_2 ? "800mm" : null,
+                    product.price_900_m_1 || product.price_900_m_2 ? "900mm" : null,
+                    product.price_1200_m_1 || product.price_1200_m_2 ? "1200mm" : null,
+                    product.price_1300_m_1 ? "1300mm" : null,
+                  ]
+                    .filter(Boolean)
+                    .join(", ")}
+                </span>
+              </div>
+              <div className="info-row">
+                <span className="info-label">Dostępne długości:</span>
+                <span className="info-value-simple">
+                  {product.length
+                    ? product.length.split(";").map(l => `${l.trim()}mm`).join(", ")
+                    : "Brak danych"}
+                </span>
+              </div>
+              <div className="info-row">
+                <span className="info-label">Forma sprzedaży:</span>
+                <span className="info-value-simple">{product.sellUnit}</span>
+              </div>
+            </div>
+            <WorktopCalculator product={product} />
+          </>
         )}
       </div>
     </div>

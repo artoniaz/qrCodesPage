@@ -4,7 +4,7 @@
   display: flex;
   justify-content: flex-start;
   align-items: flex-start;
-  padding: 25px;
+  padding: 25px 25px 50px 25px;
   background-image: linear-gradient(rgba(255, 255, 255, 0.5), rgba(255, 255, 255, 0.5)), url('../assets/soft-grey-organic-leaves-background-with-text-space_1017-60373.jpg');
   background-size: cover;
   background-position: center;
@@ -108,7 +108,7 @@
 
 .product-container {
   background: transparent;
-  padding: calc(0.75rem + 15px);
+  padding: 0;
   border-radius: 0;
   box-shadow: none;
   max-width: 900px;
@@ -241,16 +241,47 @@
   font-size: 1.125rem;
 }
 
+.worktop-basic-info {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  margin-top: 1rem;
+  padding: 0.75rem 0;
+  border-bottom: 1px solid rgba(0, 0, 0, 0.1);
+}
+
+.worktop-basic-info .info-row {
+  display: grid;
+  grid-template-columns: 140px 1fr;
+  align-items: baseline;
+  gap: 0.5rem;
+}
+
+.worktop-basic-info .info-label {
+  color: #444;
+  font-size: 0.875rem;
+  font-weight: 400;
+  text-align: left;
+}
+
+.info-value-simple {
+  color: #000;
+  font-size: 0.875rem;
+  font-weight: 400;
+  text-align: left;
+}
+
 @media (max-width: 768px) {
   .product-page {
-    padding: calc(0.5rem + 5px);
+    padding: 0;
     height: 100vh;
     overflow-y: auto;
     overflow-x: hidden;
   }
 
   .product-container {
-    padding: calc(0.5rem + 5px);
+    padding: 15px;
+    padding-bottom: 30px;
     height: auto;
     max-height: 100%;
   }
