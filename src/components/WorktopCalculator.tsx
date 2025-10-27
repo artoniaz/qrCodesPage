@@ -57,21 +57,29 @@ export default function WorktopCalculator({ product: initialProduct, thicknessVa
     .filter(variant => variant.price_1 || variant.price_2);
 
 
-  // Set initial selections and reset when thickness changes
+  // Set initial selections only if not already set, or if current selection is invalid
   useEffect(() => {
+    // Only set width if not selected yet, or if current selection is not available
     if (widthVariants.length > 0) {
-      // Find first variant that has price for current side
-      const firstAvailable = widthVariants.find(v =>
-        selectedSide === 1 ? v.price_1 : v.price_2
-      );
-      if (firstAvailable) {
-        setSelectedWidth(firstAvailable.width);
+      const currentWidthVariant = selectedWidth ? widthVariants.find(v => v.width === selectedWidth) : null;
+      const currentWidthHasPrice = currentWidthVariant && (selectedSide === 1 ? currentWidthVariant.price_1 : currentWidthVariant.price_2);
+
+      if (!selectedWidth || !currentWidthHasPrice) {
+        // Find first variant that has price for current side
+        const firstAvailable = widthVariants.find(v =>
+          selectedSide === 1 ? v.price_1 : v.price_2
+        );
+        if (firstAvailable) {
+          setSelectedWidth(firstAvailable.width);
+        }
       }
     }
-    if (availableLengths.length > 0) {
+
+    // Only set length if not selected yet, or if current selection is not available
+    if (availableLengths.length > 0 && (!selectedLength || !availableLengths.includes(selectedLength))) {
       setSelectedLength(availableLengths[0]);
     }
-  }, [selectedSide, selectedThickness]);
+  }, [selectedSide, selectedThickness, widthVariants, availableLengths, selectedWidth, selectedLength]);
 
   // Calculate price based on selections
   const calculatePrice = () => {
