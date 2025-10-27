@@ -14,8 +14,13 @@
 }
 
 html {
-  overflow: hidden;
-  height: 100vh;
+  height: 100%;
+}
+
+@media (min-width: 769px) {
+  html {
+    overflow-y: auto;
+  }
 }
 
 a {

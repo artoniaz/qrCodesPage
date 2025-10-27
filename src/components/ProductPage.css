@@ -1,21 +1,16 @@
 .product-page {
   min-height: 100vh;
-  height: 100vh;
   width: 100%;
   display: flex;
   justify-content: flex-start;
   align-items: flex-start;
-  padding: 25px 25px 50px 25px;
+  padding: 25px 25px 100px 25px;
   background-image: linear-gradient(rgba(255, 255, 255, 0.5), rgba(255, 255, 255, 0.5)), url('../assets/soft-grey-organic-leaves-background-with-text-space_1017-60373.jpg');
   background-size: cover;
   background-position: center;
   background-repeat: no-repeat;
-  position: fixed;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  overflow: hidden;
+  background-attachment: fixed;
+  overflow-y: auto;
 }
 
 .loader-container {
