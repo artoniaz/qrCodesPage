@@ -64,7 +64,7 @@ export default function ProductPage() {
     );
   }
 
-  const { product } = productData;
+  const { product, thicknessVariants } = productData;
   const isWorktop = product.category.toLowerCase() === "blat";
   const isPanel = product.category.toLowerCase() === "płyta";
 
@@ -113,17 +113,16 @@ export default function ProductPage() {
                   <span className="variant-value">{product.sellUnit}</span>
                 </div>
 
-                <div className="variant-row">
-                  <span className="variant-label">Grubość:</span>
-                  <span className="variant-value">{product.thickness}mm</span>
-                </div>
-
                 {product.producer && (
                   <div className="variant-row">
                     <span className="variant-label">Producent:</span>
                     <span className="variant-value">{product.producer}</span>
                   </div>
                 )}
+                <div className="variant-row">
+                  <span className="variant-label">Grubość:</span>
+                  <span className="variant-value">{product.thickness}mm</span>
+                </div>
               </div>
             </div>
           </div>
@@ -132,10 +131,6 @@ export default function ProductPage() {
         {isWorktop && (
           <>
             <div className="worktop-basic-info">
-              <div className="info-row">
-                <span className="info-label">Grubość:</span>
-                <span className="info-value-simple">{product.thickness}mm</span>
-              </div>
               {product.producer && (
                 <div className="info-row">
                   <span className="info-label">Producent:</span>
@@ -143,16 +138,35 @@ export default function ProductPage() {
                 </div>
               )}
               <div className="info-row">
+                <span className="info-label">Dostępne grubości:</span>
+                <span className="info-value-simple">
+                  {product.thickness}mm
+                  {thicknessVariants &&
+                    thicknessVariants.length > 0 &&
+                    thicknessVariants.map((v) => `, ${v.thickness}mm`).join("")}
+                </span>
+              </div>
+              <div className="info-row">
                 <span className="info-label">Dostępne szerokości:</span>
                 <span className="info-value-simple">
                   {[
-                    product.price_600_m_1 || product.price_600_m_2 ? "600mm" : null,
+                    product.price_600_m_1 || product.price_600_m_2
+                      ? "600mm"
+                      : null,
                     product.price_635_m_1 ? "635mm" : null,
                     product.price_650_m_1 ? "650mm" : null,
-                    product.price_700_m_1 || product.price_700_m_2 ? "700mm" : null,
-                    product.price_800_m_1 || product.price_800_m_2 ? "800mm" : null,
-                    product.price_900_m_1 || product.price_900_m_2 ? "900mm" : null,
-                    product.price_1200_m_1 || product.price_1200_m_2 ? "1200mm" : null,
+                    product.price_700_m_1 || product.price_700_m_2
+                      ? "700mm"
+                      : null,
+                    product.price_800_m_1 || product.price_800_m_2
+                      ? "800mm"
+                      : null,
+                    product.price_900_m_1 || product.price_900_m_2
+                      ? "900mm"
+                      : null,
+                    product.price_1200_m_1 || product.price_1200_m_2
+                      ? "1200mm"
+                      : null,
                     product.price_1300_m_1 ? "1300mm" : null,
                   ]
                     .filter(Boolean)
@@ -163,7 +177,10 @@ export default function ProductPage() {
                 <span className="info-label">Dostępne długości:</span>
                 <span className="info-value-simple">
                   {product.length
-                    ? product.length.split(";").map(l => `${l.trim()}mm`).join(", ")
+                    ? product.length
+                        .split(";")
+                        .map((l) => `${l.trim()}mm`)
+                        .join(", ")
                     : "Brak danych"}
                 </span>
               </div>
@@ -172,7 +189,10 @@ export default function ProductPage() {
                 <span className="info-value-simple">{product.sellUnit}</span>
               </div>
             </div>
-            <WorktopCalculator product={product} />
+            <WorktopCalculator
+              product={product}
+              thicknessVariants={thicknessVariants}
+            />
           </>
         )}
       </div>

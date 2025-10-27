@@ -4,6 +4,7 @@ import "./WorktopCalculator.css";
 
 interface WorktopCalculatorProps {
   product: Product;
+  thicknessVariants?: Product[];
 }
 
 interface WidthVariant {
@@ -14,7 +15,15 @@ interface WidthVariant {
 
 const VAT_RATE = 1.23;
 
-export default function WorktopCalculator({ product }: WorktopCalculatorProps) {
+export default function WorktopCalculator({ product: initialProduct, thicknessVariants }: WorktopCalculatorProps) {
+  // State for selected thickness variant
+  const [selectedThickness, setSelectedThickness] = useState<number>(initialProduct.thickness);
+
+  // Get the current product based on selected thickness
+  const product = selectedThickness === initialProduct.thickness
+    ? initialProduct
+    : thicknessVariants?.find(v => v.thickness === selectedThickness) || initialProduct;
+
   // Determine if product can have both sides (but not for SL label)
   const isSlimLine = product.label === "SL";
   const canChooseSide = product.side === "1_2" && !isSlimLine;
@@ -48,9 +57,9 @@ export default function WorktopCalculator({ product }: WorktopCalculatorProps) {
     .filter(variant => variant.price_1 || variant.price_2);
 
 
-  // Set initial selections
+  // Set initial selections and reset when thickness changes
   useEffect(() => {
-    if (widthVariants.length > 0 && !selectedWidth) {
+    if (widthVariants.length > 0) {
       // Find first variant that has price for current side
       const firstAvailable = widthVariants.find(v =>
         selectedSide === 1 ? v.price_1 : v.price_2
@@ -59,10 +68,10 @@ export default function WorktopCalculator({ product }: WorktopCalculatorProps) {
         setSelectedWidth(firstAvailable.width);
       }
     }
-    if (availableLengths.length > 0 && !selectedLength) {
+    if (availableLengths.length > 0) {
       setSelectedLength(availableLengths[0]);
     }
-  }, [selectedSide]);
+  }, [selectedSide, selectedThickness]);
 
   // Calculate price based on selections
   const calculatePrice = () => {
@@ -99,6 +108,17 @@ export default function WorktopCalculator({ product }: WorktopCalculatorProps) {
     return side === 1 ? "jednostronnie zaoblony" : "obustronnie zaoblony";
   };
 
+  // Build available thickness options
+  const availableThicknesses: number[] = [initialProduct.thickness];
+  if (thicknessVariants && thicknessVariants.length > 0) {
+    thicknessVariants.forEach(v => {
+      if (!availableThicknesses.includes(v.thickness)) {
+        availableThicknesses.push(v.thickness);
+      }
+    });
+  }
+  availableThicknesses.sort((a, b) => a - b);
+
   return (
     <div className="worktop-calculator">
       <div className="calculator-header">
@@ -106,6 +126,24 @@ export default function WorktopCalculator({ product }: WorktopCalculatorProps) {
       </div>
 
       <div className="calculator-options">
+        {/* Thickness selection - only if variants exist */}
+        {availableThicknesses.length > 1 && (
+          <div className="option-group">
+            <label className="option-label">Grubość:</label>
+            <div className="chip-selector">
+              {availableThicknesses.map((thickness) => (
+                <button
+                  key={thickness}
+                  className={`chip ${selectedThickness === thickness ? 'chip-active' : ''}`}
+                  onClick={() => setSelectedThickness(thickness)}
+                >
+                  {thickness}mm
+                </button>
+              ))}
+            </div>
+          </div>
+        )}
+
         {/* Side selection - only if product supports both */}
         {canChooseSide && (
           <div className="option-group">
