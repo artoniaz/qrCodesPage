@@ -103,7 +103,7 @@ export default function ProductPage() {
                 <div className="variant-row">
                   <span className="variant-label">Wymiary:</span>
                   <span className="variant-value">
-                    {product.width ? `${product.width}mm` : "undefinedmm"} x{" "}
+                    {product.width_1 ? `${product.width_1}mm` : "undefinedmm"} x{" "}
                     {product.height ? `${product.height}mm` : "undefinedmm"}
                   </span>
                 </div>
@@ -149,28 +149,12 @@ export default function ProductPage() {
               <div className="info-row">
                 <span className="info-label">Dostępne szerokości:</span>
                 <span className="info-value-simple">
-                  {[
-                    product.price_600_m_1 || product.price_600_m_2
-                      ? "600mm"
-                      : null,
-                    product.price_635_m_1 ? "635mm" : null,
-                    product.price_650_m_1 ? "650mm" : null,
-                    product.price_700_m_1 || product.price_700_m_2
-                      ? "700mm"
-                      : null,
-                    product.price_800_m_1 || product.price_800_m_2
-                      ? "800mm"
-                      : null,
-                    product.price_900_m_1 || product.price_900_m_2
-                      ? "900mm"
-                      : null,
-                    product.price_1200_m_1 || product.price_1200_m_2
-                      ? "1200mm"
-                      : null,
-                    product.price_1300_m_1 ? "1300mm" : null,
-                  ]
-                    .filter(Boolean)
-                    .join(", ")}
+                  {product.width
+                    ? product.width
+                        .split(";")
+                        .map((w) => `${w.trim()}mm`)
+                        .join(", ")
+                    : "Brak danych"}
                 </span>
               </div>
               <div className="info-row">

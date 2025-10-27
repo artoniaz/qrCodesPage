@@ -10,7 +10,15 @@ export interface Product {
   code: string;
   thickness: number;
   typePrice: string;
-  width: number;
+  width?: string; // Semicolon-separated values like "600; 800; 1200"
+  width_1?: number; // Parsed from width string
+  width_2?: number; // Parsed from width string
+  width_3?: number; // Parsed from width string
+  width_4?: number; // Parsed from width string
+  width_5?: number; // Parsed from width string
+  width_6?: number; // Parsed from width string
+  width_7?: number; // Parsed from width string
+  width_8?: number; // Parsed from width string
   height?: number;
   type?: string;
   url: string;

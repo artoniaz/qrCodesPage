@@ -69,9 +69,38 @@ async function fetchProductsByCode(code: string): Promise<Product[]> {
         };
       };
 
+      const parseWidth = (widthValue: string | undefined): {
+        width_1?: number,
+        width_2?: number,
+        width_3?: number,
+        width_4?: number,
+        width_5?: number,
+        width_6?: number,
+        width_7?: number,
+        width_8?: number
+      } => {
+        if (!widthValue || typeof widthValue !== 'string') return {};
+        const widths = widthValue.split(';').map(w => {
+          const trimmed = w.trim();
+          const parsed = parseInt(trimmed);
+          return isNaN(parsed) ? undefined : parsed;
+        }).filter(w => w !== undefined);
+        return {
+          width_1: widths[0],
+          width_2: widths[1],
+          width_3: widths[2],
+          width_4: widths[3],
+          width_5: widths[4],
+          width_6: widths[5],
+          width_7: widths[6],
+          width_8: widths[7],
+        };
+      };
+
       // Map records to Product type and add to collection
       const products = data.records.map((record: any) => {
         const parsedLengths = parseLength(record.fields.length);
+        const parsedWidths = parseWidth(record.fields.width);
         return {
           id: record.id,
           decor: record.fields.decor || '',
@@ -84,7 +113,15 @@ async function fetchProductsByCode(code: string): Promise<Product[]> {
           code: record.fields.code || '',
           thickness: record.fields.thickness || 0,
           typePrice: record.fields.typePrice || '',
-          width: record.fields.width || 0,
+          width: record.fields.width || undefined,
+          width_1: parsedWidths.width_1,
+          width_2: parsedWidths.width_2,
+          width_3: parsedWidths.width_3,
+          width_4: parsedWidths.width_4,
+          width_5: parsedWidths.width_5,
+          width_6: parsedWidths.width_6,
+          width_7: parsedWidths.width_7,
+          width_8: parsedWidths.width_8,
           height: record.fields.height || undefined,
           type: record.fields.type || undefined,
           url: record.fields.url || '',
@@ -179,8 +216,38 @@ export async function fetchProduct(recordId: string): Promise<ProductWithVariant
     };
   };
 
-  // Parse length values
+  // Helper function to parse width string (format: "600; 800; 1200")
+  const parseWidth = (widthValue: string | undefined): {
+    width_1?: number,
+    width_2?: number,
+    width_3?: number,
+    width_4?: number,
+    width_5?: number,
+    width_6?: number,
+    width_7?: number,
+    width_8?: number
+  } => {
+    if (!widthValue || typeof widthValue !== 'string') return {};
+    const widths = widthValue.split(';').map(w => {
+      const trimmed = w.trim();
+      const parsed = parseInt(trimmed);
+      return isNaN(parsed) ? undefined : parsed;
+    }).filter(w => w !== undefined);
+    return {
+      width_1: widths[0],
+      width_2: widths[1],
+      width_3: widths[2],
+      width_4: widths[3],
+      width_5: widths[4],
+      width_6: widths[5],
+      width_7: widths[6],
+      width_8: widths[7],
+    };
+  };
+
+  // Parse length and width values
   const parsedLengths = parseLength(data.fields.length);
+  const parsedWidths = parseWidth(data.fields.width);
 
   // Map Airtable response to Product type
   const product: Product = {
@@ -195,7 +262,15 @@ export async function fetchProduct(recordId: string): Promise<ProductWithVariant
     code: data.fields.code || '',
     thickness: data.fields.thickness || 0,
     typePrice: data.fields.typePrice || '',
-    width: data.fields.width || 0,
+    width: data.fields.width || undefined,
+    width_1: parsedWidths.width_1,
+    width_2: parsedWidths.width_2,
+    width_3: parsedWidths.width_3,
+    width_4: parsedWidths.width_4,
+    width_5: parsedWidths.width_5,
+    width_6: parsedWidths.width_6,
+    width_7: parsedWidths.width_7,
+    width_8: parsedWidths.width_8,
     height: data.fields.height || undefined,
     type: data.fields.type || undefined,
     url: data.fields.url || '',

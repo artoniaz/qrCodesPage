@@ -41,20 +41,27 @@ export default function WorktopCalculator({ product: initialProduct, thicknessVa
   if (product.length_1) availableLengths.push(product.length_1);
   if (product.length_2) availableLengths.push(product.length_2);
 
-  // Build available width variants by checking which price fields exist
-  const allPossibleWidths = [600, 635, 650, 700, 800, 900, 1200, 1300];
-  const widthVariants: WidthVariant[] = allPossibleWidths
-    .map(width => {
-      const priceField_1 = `price_${width}_m_1` as keyof Product;
-      const priceField_2 = `price_${width}_m_2` as keyof Product;
+  // Build available width variants from parsed width values
+  const availableWidths: number[] = [];
+  if (product.width_1) availableWidths.push(product.width_1);
+  if (product.width_2) availableWidths.push(product.width_2);
+  if (product.width_3) availableWidths.push(product.width_3);
+  if (product.width_4) availableWidths.push(product.width_4);
+  if (product.width_5) availableWidths.push(product.width_5);
+  if (product.width_6) availableWidths.push(product.width_6);
+  if (product.width_7) availableWidths.push(product.width_7);
+  if (product.width_8) availableWidths.push(product.width_8);
 
-      return {
-        width,
-        price_1: product[priceField_1] as number | undefined,
-        price_2: product[priceField_2] as number | undefined,
-      };
-    })
-    .filter(variant => variant.price_1 || variant.price_2);
+  const widthVariants: WidthVariant[] = availableWidths.map(width => {
+    const priceField_1 = `price_${width}_m_1` as keyof Product;
+    const priceField_2 = `price_${width}_m_2` as keyof Product;
+
+    return {
+      width,
+      price_1: product[priceField_1] as number | undefined,
+      price_2: product[priceField_2] as number | undefined,
+    };
+  });
 
 
   // Set initial selections only if not already set, or if current selection is invalid
