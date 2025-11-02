@@ -12,24 +12,27 @@ const TABLE_IDS = [
   'tblsIe86QUiwNHxN6',
   'tblNItna4sii6GlL9',
   'tblsEnC8rEzMpe3rC',
-  'tblHkykZmLJghpL6Z',
 ];
+
+// Front products only use this single table
+const FRONT_TABLE_ID = 'tblHkykZmLJghpL6Z';
 
 export interface ProductWithVariants {
   product: Product;
   thicknessVariants?: Product[]; // Related products with same code but different thickness
 }
 
-// Fetch products by code (for finding thickness variants) - searches across ALL tables
+// Fetch products by code (for finding thickness variants)
 async function fetchProductsByCode(code: string, productType: 'regular' | 'front' = 'regular'): Promise<Product[]> {
   if (!code) return [];
 
   const allProducts: Product[] = [];
   const filterFormula = `{code} = '${code}'`;
   const baseId = productType === 'front' ? FRONT_BASE_ID : BASE_ID;
+  const tableIds = productType === 'front' ? [FRONT_TABLE_ID] : TABLE_IDS;
 
-  // Search across all tables
-  for (const tableId of TABLE_IDS) {
+  // Search across the relevant tables (single table for front, multiple for regular)
+  for (const tableId of tableIds) {
     const url = `https://api.airtable.com/v0/${baseId}/${tableId}?filterByFormula=${encodeURIComponent(filterFormula)}`;
 
     try {
@@ -171,8 +174,9 @@ export async function fetchProduct(recordId: string, productType: 'regular' | 'f
   let data: any = null;
   let foundTableId: string | null = null;
   const baseId = productType === 'front' ? FRONT_BASE_ID : BASE_ID;
+  const tableIds = productType === 'front' ? [FRONT_TABLE_ID] : TABLE_IDS;
 
-  for (const tableId of TABLE_IDS) {
+  for (const tableId of tableIds) {
     const url = `https://api.airtable.com/v0/${baseId}/${tableId}/${recordId}`;
 
     const response = await fetch(url, {
