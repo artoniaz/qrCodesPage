@@ -2,6 +2,7 @@ import type { Product } from '../types/product';
 
 const AIRTABLE_TOKEN = import.meta.env.VITE_AIRTABLE_TOKEN;
 const BASE_ID = import.meta.env.VITE_AIRTABLE_BASE_ID;
+const FRONT_BASE_ID = import.meta.env.VITE_AIRTABLE_FRONT_BASE_ID;
 
 // All available table IDs from different product categories
 const TABLE_IDS = [
@@ -11,7 +12,7 @@ const TABLE_IDS = [
   'tblsIe86QUiwNHxN6',
   'tblNItna4sii6GlL9',
   'tblsEnC8rEzMpe3rC',
-  'tblHkykZmLJghpL6Z', 
+  'tblHkykZmLJghpL6Z',
 ];
 
 export interface ProductWithVariants {
@@ -20,15 +21,16 @@ export interface ProductWithVariants {
 }
 
 // Fetch products by code (for finding thickness variants) - searches across ALL tables
-async function fetchProductsByCode(code: string): Promise<Product[]> {
+async function fetchProductsByCode(code: string, productType: 'regular' | 'front' = 'regular'): Promise<Product[]> {
   if (!code) return [];
 
   const allProducts: Product[] = [];
   const filterFormula = `{code} = '${code}'`;
+  const baseId = productType === 'front' ? FRONT_BASE_ID : BASE_ID;
 
   // Search across all tables
   for (const tableId of TABLE_IDS) {
-    const url = `https://api.airtable.com/v0/${BASE_ID}/${tableId}?filterByFormula=${encodeURIComponent(filterFormula)}`;
+    const url = `https://api.airtable.com/v0/${baseId}/${tableId}?filterByFormula=${encodeURIComponent(filterFormula)}`;
 
     try {
       const response = await fetch(url, {
@@ -145,6 +147,12 @@ async function fetchProductsByCode(code: string): Promise<Product[]> {
           price_800_m_2: parsePrice(record.fields.price_800_m_2),
           price_900_m_2: parsePrice(record.fields.price_900_m_2),
           price_1200_m_2: parsePrice(record.fields.price_1200_m_2),
+          // Front-specific fields
+          frez_typ: record.fields.frez_typ || undefined,
+          kolor: record.fields.kolor || undefined,
+          info: record.fields.info || undefined,
+          czas_oczekiwania: record.fields.czas_oczekiwania || undefined,
+          cena_brutto: parsePrice(record.fields.cena_brutto),
         };
       });
 
@@ -158,13 +166,14 @@ async function fetchProductsByCode(code: string): Promise<Product[]> {
   return allProducts;
 }
 
-export async function fetchProduct(recordId: string): Promise<ProductWithVariants> {
+export async function fetchProduct(recordId: string, productType: 'regular' | 'front' = 'regular'): Promise<ProductWithVariants> {
   // Try to fetch from each table until we find the record
   let data: any = null;
   let foundTableId: string | null = null;
+  const baseId = productType === 'front' ? FRONT_BASE_ID : BASE_ID;
 
   for (const tableId of TABLE_IDS) {
-    const url = `https://api.airtable.com/v0/${BASE_ID}/${tableId}/${recordId}`;
+    const url = `https://api.airtable.com/v0/${baseId}/${tableId}/${recordId}`;
 
     const response = await fetch(url, {
       headers: {
@@ -297,13 +306,19 @@ export async function fetchProduct(recordId: string): Promise<ProductWithVariant
     price_800_m_2: parsePrice(data.fields.price_800_m_2),
     price_900_m_2: parsePrice(data.fields.price_900_m_2),
     price_1200_m_2: parsePrice(data.fields.price_1200_m_2),
+    // Front-specific fields
+    frez_typ: data.fields.frez_typ || undefined,
+    kolor: data.fields.kolor || undefined,
+    info: data.fields.info || undefined,
+    czas_oczekiwania: data.fields.czas_oczekiwania || undefined,
+    cena_brutto: parsePrice(data.fields.cena_brutto),
   };
 
   // Fetch thickness variants by code from ALL tables for blat category only
   let thicknessVariants: Product[] | undefined = undefined;
   if (product.category.toLowerCase() === 'blat' && product.code) {
     try {
-      const variants = await fetchProductsByCode(product.code);
+      const variants = await fetchProductsByCode(product.code, productType);
       // Filter out the current product and keep only variants with different thickness
       thicknessVariants = variants.filter(v =>
         v.id !== product.id && v.thickness !== product.thickness

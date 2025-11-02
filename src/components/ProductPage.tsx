@@ -1,11 +1,12 @@
 import { useEffect, useState } from "react";
-import { useParams } from "react-router-dom";
+import { useParams, useLocation } from "react-router-dom";
 import { fetchProduct, type ProductWithVariants } from "../services/airtable";
 import WorktopCalculator from "./WorktopCalculator";
 import "./ProductPage.css";
 
 export default function ProductPage() {
   const { id } = useParams<{ id: string }>();
+  const location = useLocation();
   const [productData, setProductData] = useState<ProductWithVariants | null>(
     null
   );
@@ -22,7 +23,10 @@ export default function ProductPage() {
     setLoading(true);
     setError(null);
 
-    fetchProduct(id)
+    // Determine product type based on URL path
+    const productType = location.pathname.includes('/product/front/') ? 'front' : 'regular';
+
+    fetchProduct(id, productType)
       .then((data) => {
         setProductData(data);
         setLoading(false);
@@ -31,7 +35,14 @@ export default function ProductPage() {
         setError(err.message || "Failed to load product");
         setLoading(false);
       });
-  }, [id]);
+  }, [id, location.pathname]);
+
+  // Scroll to top after content loads
+  useEffect(() => {
+    if (!loading && productData) {
+      window.scrollTo(0, 0);
+    }
+  }, [loading, productData]);
 
   if (loading) {
     return (
@@ -67,27 +78,45 @@ export default function ProductPage() {
   const { product, thicknessVariants } = productData;
   const isWorktop = product.category.toLowerCase() === "blat";
   const isPanel = product.category.toLowerCase() === "płyta";
+  const isFront = location.pathname.includes('/product/front/');
+
+  const hasProductInfo = product.decor || product.structure || product.category || product.description;
 
   return (
     <div className="product-page">
       <div className="product-container">
-        <h1 className="product-title">{product.name}</h1>
+        <h1 className="product-title">{isFront ? "Front Meblowy" : product.name}</h1>
 
-        <div className="product-info">
-          <div className="info-section">
-            <span className="info-label">Dekor:</span>
-            <span className="info-value">{product.decor}</span>
-          </div>
+        {hasProductInfo && (
+          <div className="product-info">
+            {product.decor && (
+              <div className="info-section">
+                <span className="info-label">Dekor:</span>
+                <span className="info-value">{product.decor}</span>
+              </div>
+            )}
 
-          <div className="info-section">
-            <span className="info-label">Struktura:</span>
-            <span className="info-value">{product.structure}</span>
-          </div>
+            {product.structure && (
+              <div className="info-section">
+                <span className="info-label">Struktura:</span>
+                <span className="info-value">{product.structure}</span>
+              </div>
+            )}
 
-          <div className="info-section description">
-            <span className="info-value">{product.description}</span>
+            {product.category && (
+              <div className="info-section">
+                <span className="info-label">Kategoria:</span>
+                <span className="info-value">{product.category}</span>
+              </div>
+            )}
+
+            {product.description && (
+              <div className="info-section description">
+                <span className="info-value">{product.description}</span>
+              </div>
+            )}
           </div>
-        </div>
+        )}
 
         {isPanel && (
           <div className="variants-section">
@@ -178,6 +207,121 @@ export default function ProductPage() {
               thicknessVariants={thicknessVariants}
             />
           </>
+        )}
+
+        {!isWorktop && !isPanel && isFront && (
+          <div className="worktop-basic-info front-info">
+            {product.producer && (
+              <div className="info-row">
+                <span className="info-label">Producent:</span>
+                <span className="info-value-simple">{product.producer}</span>
+              </div>
+            )}
+            <div className="info-row">
+              <span className="info-label">Typ frontu:</span>
+              <span className="info-value-simple">Foliowany</span>
+            </div>
+            {product.frez_typ && (
+              <div className="info-row">
+                <span className="info-label">Frez:</span>
+                <span className="info-value-simple">{product.frez_typ}</span>
+              </div>
+            )}
+            {product.kolor && (
+              <div className="info-row">
+                <span className="info-label">Kolor:</span>
+                <span className="info-value-simple">{product.kolor}</span>
+              </div>
+            )}
+            {product.info && (
+              <div className="info-row">
+                <span className="info-label">Informacje:</span>
+                <span className="info-value-simple">{product.info}</span>
+              </div>
+            )}
+            {product.czas_oczekiwania && (
+              <div className="info-row">
+                <span className="info-label">Czas oczekiwania:</span>
+                <span className="info-value-simple">{product.czas_oczekiwania}</span>
+              </div>
+            )}
+            {product.cena_brutto && (
+              <div className="info-row">
+                <span className="info-label">Cena:</span>
+                <span className="info-value-simple">
+                  {product.cena_brutto.toFixed(2)} zł brutto / m<sup>2</sup>
+                </span>
+              </div>
+            )}
+          </div>
+        )}
+
+        {!isWorktop && !isPanel && !isFront && (
+          <div className="variants-section">
+            <div className="variant-card">
+              <div className="variant-details">
+                {product.price > 0 && (
+                  <div className="variant-row">
+                    <span className="variant-label">Cena:</span>
+                    <span className="variant-value price">
+                      {(product.price * 1.23).toFixed(2)} zł brutto/szt.
+                    </span>
+                  </div>
+                )}
+
+                {product.width_1 && product.height && (
+                  <div className="variant-row">
+                    <span className="variant-label">Wymiary:</span>
+                    <span className="variant-value">
+                      {product.width_1}mm x {product.height}mm
+                    </span>
+                  </div>
+                )}
+
+                {product.sellUnit && (
+                  <div className="variant-row">
+                    <span className="variant-label">Forma sprzedaży:</span>
+                    <span className="variant-value">{product.sellUnit}</span>
+                  </div>
+                )}
+
+                {product.producer && (
+                  <div className="variant-row">
+                    <span className="variant-label">Producent:</span>
+                    <span className="variant-value">{product.producer}</span>
+                  </div>
+                )}
+
+                {product.thickness > 0 && (
+                  <div className="variant-row">
+                    <span className="variant-label">Grubość:</span>
+                    <span className="variant-value">{product.thickness}mm</span>
+                  </div>
+                )}
+
+                {product.code && (
+                  <div className="variant-row">
+                    <span className="variant-label">Kod:</span>
+                    <span className="variant-value">{product.code}</span>
+                  </div>
+                )}
+
+                {product.type && (
+                  <div className="variant-row">
+                    <span className="variant-label">Typ:</span>
+                    <span className="variant-value">{product.type}</span>
+                  </div>
+                )}
+
+                {product.label && (
+                  <div className="variant-row">
+                    <span className="variant-label">Etykieta:</span>
+                    <span className="variant-value">{product.label}</span>
+                  </div>
+                )}
+              </div>
+            </div>
+          </div>
         )}
       </div>
     </div>

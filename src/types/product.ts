@@ -45,4 +45,10 @@ export interface Product {
   price_800_m_2?: number;
   price_900_m_2?: number;
   price_1200_m_2?: number;
+  // Front-specific fields
+  frez_typ?: string;
+  kolor?: string;
+  info?: string;
+  czas_oczekiwania?: string;
+  cena_brutto?: number;
 }
