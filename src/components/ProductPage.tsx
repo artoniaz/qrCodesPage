@@ -217,10 +217,12 @@ export default function ProductPage() {
                 <span className="info-value-simple">{product.producer}</span>
               </div>
             )}
-            <div className="info-row">
-              <span className="info-label">Typ frontu:</span>
-              <span className="info-value-simple">Foliowany</span>
-            </div>
+            {product.front_typ && (
+              <div className="info-row">
+                <span className="info-label">Typ frontu:</span>
+                <span className="info-value-simple">{product.front_typ}</span>
+              </div>
+            )}
             {product.frez_typ && (
               <div className="info-row">
                 <span className="info-label">Frez:</span>

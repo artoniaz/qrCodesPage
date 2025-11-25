@@ -151,6 +151,7 @@ async function fetchProductsByCode(code: string, productType: 'regular' | 'front
           price_900_m_2: parsePrice(record.fields.price_900_m_2),
           price_1200_m_2: parsePrice(record.fields.price_1200_m_2),
           // Front-specific fields
+          front_typ: record.fields.front_typ || undefined,
           frez_typ: record.fields.frez_typ || undefined,
           kolor: record.fields.kolor || undefined,
           info: record.fields.info || undefined,
@@ -311,6 +312,7 @@ export async function fetchProduct(recordId: string, productType: 'regular' | 'f
     price_900_m_2: parsePrice(data.fields.price_900_m_2),
     price_1200_m_2: parsePrice(data.fields.price_1200_m_2),
     // Front-specific fields
+    front_typ: data.fields.front_typ || undefined,
     frez_typ: data.fields.frez_typ || undefined,
     kolor: data.fields.kolor || undefined,
     info: data.fields.info || undefined,

@@ -46,6 +46,7 @@ export interface Product {
   price_900_m_2?: number;
   price_1200_m_2?: number;
   // Front-specific fields
+  front_typ?: string;
   frez_typ?: string;
   kolor?: string;
   info?: string;
