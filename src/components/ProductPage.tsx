@@ -245,11 +245,13 @@ export default function ProductPage() {
                 <span className="info-value-simple">{product.czas_oczekiwania}</span>
               </div>
             )}
-            {product.cena_brutto && (
+            {product.cena_brutto !== undefined && (
               <div className="info-row">
                 <span className="info-label">Cena:</span>
                 <span className="info-value-simple">
-                  {product.cena_brutto.toFixed(2)} zł brutto / m<sup>2</sup>
+                  {product.cena_brutto > 0
+                    ? `${product.cena_brutto.toFixed(2)} zł brutto / m²`
+                    : 'wycena indywidualna'}
                 </span>
               </div>
             )}
