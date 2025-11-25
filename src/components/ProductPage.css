@@ -28,9 +28,9 @@
 .loader {
   width: 60px;
   height: 60px;
-  margin: 0 auto 1.5rem;
+  margin: 0;
   position: relative;
-  display: inline-block;
+  display: block;
 }
 
 .loader::before,
