@@ -291,6 +291,7 @@
     overflow-y: auto;
     overflow-x: hidden;
     -webkit-overflow-scrolling: touch;
+    background-attachment: scroll;
   }
 
   .product-container {
@@ -312,7 +313,7 @@
   }
 
   .info-value {
-    font-size: 1.1rem;
+    font-size: 1.5rem;
   }
 
   .info-section.description .info-value {
