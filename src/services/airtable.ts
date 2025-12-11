@@ -157,6 +157,7 @@ async function fetchProductsByCode(code: string, productType: 'regular' | 'front
           info: record.fields.info || undefined,
           czas_oczekiwania: record.fields.czas_oczekiwania || undefined,
           cena_brutto: parsePrice(record.fields.cena_brutto),
+          cena_brutto_laser: parsePrice(record.fields.cena_brutto_laser),
         };
       });
 
@@ -318,6 +319,7 @@ export async function fetchProduct(recordId: string, productType: 'regular' | 'f
     info: data.fields.info || undefined,
     czas_oczekiwania: data.fields.czas_oczekiwania || undefined,
     cena_brutto: parsePrice(data.fields.cena_brutto),
+    cena_brutto_laser: parsePrice(data.fields.cena_brutto_laser),
   };
 
   // Fetch thickness variants by code from ALL tables for blat category only

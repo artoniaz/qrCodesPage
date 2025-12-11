@@ -283,6 +283,50 @@
   margin-bottom: 0.25rem;
 }
 
+.engraving-price-table {
+  width: 100%;
+  margin-top: 0.5rem;
+}
+
+.engraving-price-table table {
+  width: 100%;
+  border-collapse: collapse;
+  background: rgba(255, 255, 255, 0.5);
+  border-radius: 8px;
+  overflow: hidden;
+}
+
+.engraving-price-table th,
+.engraving-price-table td {
+  padding: 0.75rem 1rem;
+  text-align: left;
+  border-bottom: 1px solid rgba(0, 0, 0, 0.1);
+}
+
+.engraving-price-table thead {
+  background: rgba(0, 0, 0, 0.05);
+}
+
+.engraving-price-table th {
+  font-weight: 600;
+  color: #000;
+  font-size: 0.875rem;
+}
+
+.engraving-price-table td {
+  color: #000;
+  font-size: 0.875rem;
+}
+
+.engraving-price-table tbody tr:last-child td {
+  border-bottom: none;
+}
+
+.engraving-price-table td:first-child,
+.engraving-price-table th:first-child {
+  font-weight: 600;
+}
+
 @media (max-width: 768px) {
   .product-page {
     padding: 0;
@@ -363,5 +407,15 @@
 
   .variant-value {
     text-align: left;
+  }
+
+  .engraving-price-table {
+    overflow-x: auto;
+  }
+
+  .engraving-price-table th,
+  .engraving-price-table td {
+    padding: 0.5rem 0.75rem;
+    font-size: 0.75rem;
   }
 }

@@ -52,4 +52,5 @@ export interface Product {
   info?: string;
   czas_oczekiwania?: string;
   cena_brutto?: number;
+  cena_brutto_laser?: number;
 }

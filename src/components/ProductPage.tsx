@@ -247,7 +247,30 @@ export default function ProductPage() {
                 <span className="info-value-simple">{product.czas_oczekiwania}</span>
               </div>
             )}
-            {product.cena_brutto !== undefined && (
+            {product.cena_brutto !== undefined && product.cena_brutto_laser !== undefined && product.cena_brutto_laser > 0 ? (
+              <div className="engraving-price-table">
+                <table>
+                  <thead>
+                    <tr>
+                      <th>Oklajanie:</th>
+                      <th>standardowe</th>
+                      <th>laserowe</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr>
+                      <td>Cena:</td>
+                      <td>
+                        {product.cena_brutto > 0
+                          ? `${product.cena_brutto.toFixed(2)} zł brutto / m²`
+                          : 'wycena indywidualna'}
+                      </td>
+                      <td>{product.cena_brutto_laser.toFixed(2)} zł brutto / m²</td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+            ) : product.cena_brutto !== undefined ? (
               <div className="info-row">
                 <span className="info-label">Cena:</span>
                 <span className="info-value-simple">
@@ -256,7 +279,7 @@ export default function ProductPage() {
                     : 'wycena indywidualna'}
                 </span>
               </div>
-            )}
+            ) : null}
           </div>
         )}
 
