@@ -26,7 +26,11 @@ export default function ProductPage() {
     // Determine product type based on URL path
     const productType = location.pathname.includes('/product/front/') ? 'front' : 'regular';
 
-    fetchProduct(id, productType)
+    // Extract tableId from query parameters
+    const searchParams = new URLSearchParams(location.search);
+    const tableId = searchParams.get('table') || undefined;
+
+    fetchProduct(id, productType, tableId)
       .then((data) => {
         setProductData(data);
         setLoading(false);
@@ -35,7 +39,7 @@ export default function ProductPage() {
         setError(err.message || "Failed to load product");
         setLoading(false);
       });
-  }, [id, location.pathname]);
+  }, [id, location.pathname, location.search]);
 
   // Scroll to top after content loads
   useEffect(() => {
