@@ -129,7 +129,7 @@ export default function ProductPage() {
                 <div className="variant-row">
                   <span className="variant-label">Cena:</span>
                   <span className="variant-value price">
-                    {(product.price * 1.23).toFixed(2)} zł brutto/szt.
+                    zmiana cennika, tymczasowo proszę pytać obsługę
                   </span>
                 </div>
 
