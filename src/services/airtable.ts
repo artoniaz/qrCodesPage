@@ -162,6 +162,7 @@ export async function fetchProductsByCode(code: string, productType: 'regular' |
           czas_oczekiwania: record.fields.czas_oczekiwania || undefined,
           cena_brutto: parsePrice(record.fields.cena_brutto),
           cena_brutto_laser: parsePrice(record.fields.cena_brutto_laser),
+          ukryj_cene: record.fields.ukryj_cene === true,
         };
       });
 
@@ -277,6 +278,7 @@ function parseAirtableRecord(record: any): Product {
     czas_oczekiwania: record.fields.czas_oczekiwania || undefined,
     cena_brutto: parsePrice(record.fields.cena_brutto),
     cena_brutto_laser: parsePrice(record.fields.cena_brutto_laser),
+    ukryj_cene: record.fields.ukryj_cene === true,
   };
 }
 

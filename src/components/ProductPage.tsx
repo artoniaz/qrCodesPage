@@ -81,8 +81,8 @@ export default function ProductPage() {
 
   const { product, thicknessVariants } = productData;
   const isWorktop = product.category.toLowerCase() === "blat";
-  const isPanel = product.category.toLowerCase() === "płyta";
   const isFront = location.pathname.includes('/product/front/');
+  const isPriceHidden = product.ukryj_cene === true;
 
   const hasProductInfo = product.decor || product.structure || product.category || product.description;
 
@@ -122,7 +122,7 @@ export default function ProductPage() {
           </div>
         )}
 
-        {isPanel && (
+        {isPriceHidden && !isWorktop && !isFront && (
           <div className="variants-section">
             <div className="variant-card">
               <div className="variant-details">
@@ -133,18 +133,21 @@ export default function ProductPage() {
                   </span>
                 </div>
 
-                <div className="variant-row">
-                  <span className="variant-label">Wymiary:</span>
-                  <span className="variant-value">
-                    {product.width_1 ? `${product.width_1}mm` : "undefinedmm"} x{" "}
-                    {product.height ? `${product.height}mm` : "undefinedmm"}
-                  </span>
-                </div>
+                {product.width_1 && product.height && (
+                  <div className="variant-row">
+                    <span className="variant-label">Wymiary:</span>
+                    <span className="variant-value">
+                      {product.width_1}mm x {product.height}mm
+                    </span>
+                  </div>
+                )}
 
-                <div className="variant-row">
-                  <span className="variant-label">Forma sprzedaży:</span>
-                  <span className="variant-value">{product.sellUnit}</span>
-                </div>
+                {product.sellUnit && (
+                  <div className="variant-row">
+                    <span className="variant-label">Forma sprzedaży:</span>
+                    <span className="variant-value">{product.sellUnit}</span>
+                  </div>
+                )}
 
                 {product.producer && (
                   <div className="variant-row">
@@ -152,10 +155,20 @@ export default function ProductPage() {
                     <span className="variant-value">{product.producer}</span>
                   </div>
                 )}
-                <div className="variant-row">
-                  <span className="variant-label">Grubość:</span>
-                  <span className="variant-value">{product.thickness}mm</span>
-                </div>
+
+                {product.thickness > 0 && (
+                  <div className="variant-row">
+                    <span className="variant-label">Grubość:</span>
+                    <span className="variant-value">{product.thickness}mm</span>
+                  </div>
+                )}
+
+                {product.code && (
+                  <div className="variant-row">
+                    <span className="variant-label">Kod:</span>
+                    <span className="variant-value">{product.code}</span>
+                  </div>
+                )}
               </div>
             </div>
           </div>
@@ -213,7 +226,7 @@ export default function ProductPage() {
           </>
         )}
 
-        {!isWorktop && !isPanel && isFront && (
+        {!isWorktop && isFront && (
           <div className="worktop-basic-info front-info">
             {product.producer && (
               <div className="info-row">
@@ -251,7 +264,14 @@ export default function ProductPage() {
                 <span className="info-value-simple">{product.czas_oczekiwania}</span>
               </div>
             )}
-            {product.cena_brutto !== undefined && product.cena_brutto_laser !== undefined && product.cena_brutto_laser > 0 ? (
+            {isPriceHidden ? (
+              <div className="info-row">
+                <span className="info-label">Cena:</span>
+                <span className="info-value-simple">
+                  zmiana cennika, tymczasowo proszę pytać obsługę
+                </span>
+              </div>
+            ) : product.cena_brutto !== undefined && product.cena_brutto_laser !== undefined && product.cena_brutto_laser > 0 ? (
               <div className="engraving-price-table">
                 <table>
                   <thead>
@@ -287,7 +307,7 @@ export default function ProductPage() {
           </div>
         )}
 
-        {!isWorktop && !isPanel && !isFront && (
+        {!isWorktop && !isPriceHidden && !isFront && (
           <div className="variants-section">
             <div className="variant-card">
               <div className="variant-details">

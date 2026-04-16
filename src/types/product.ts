@@ -53,4 +53,6 @@ export interface Product {
   czas_oczekiwania?: string;
   cena_brutto?: number;
   cena_brutto_laser?: number;
+  // Price visibility flag (set in Airtable when prices are being updated)
+  ukryj_cene?: boolean;
 }
