@@ -55,4 +55,12 @@ export interface Product {
   cena_brutto_laser?: number;
   // Price visibility flag (set in Airtable when prices are being updated)
   ukryj_cene?: boolean;
+  // New Juan blaty schema (single consolidated table)
+  prices?: Record<string, number>; // "{width}x{length}x{zaobleniaKey}" -> net price per meter
+  // Maps the calculator's side selector (1 = jednostronnie, 2 = obustronnie) to the actual
+  // string used inside price-map keys. Differs per product: some use "1"/"2", others "0_1"/"2".
+  sideKeys?: { 1?: string; 2?: string };
+  kolekcja?: string;
+  qr_id?: string;
+  is_new?: boolean;
 }

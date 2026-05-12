@@ -9,6 +9,8 @@ interface WorktopCalculatorProps {
 
 interface WidthVariant {
   width: number;
+  hasSide1: boolean;
+  hasSide2: boolean;
   price_1?: number;
   price_2?: number;
 }
@@ -31,6 +33,18 @@ export default function WorktopCalculator({ product: initialProduct, thicknessVa
   // Determine if product is Kronospan (per-item pricing, not per-meter)
   const isKronospan = product.producer === "Kronospan";
 
+  // New Juan schema: JSON pricing map keyed by "WxLx<sideKey>" where <sideKey> varies
+  // per product (some use "1"/"2", others "0_1"/"2"). The mapping is provided via
+  // product.sideKeys. Values in the map are net price PER METER — multiplication
+  // by the selected length happens in calculatePrice (confirmed: same value appears
+  // for both 3050 and 4200 entries of the same width+side).
+  const usesPriceMap = !!product.prices;
+  const lookupMapPrice = (w: number, l: number, s: 1 | 2): number | undefined => {
+    const sideKey = product.sideKeys?.[s];
+    if (!sideKey) return undefined;
+    return product.prices?.[`${w}x${l}x${sideKey}`];
+  };
+
   // State management
   const [selectedSide, setSelectedSide] = useState<1 | 2>(1);
   const [selectedWidth, setSelectedWidth] = useState<number | null>(null);
@@ -38,8 +52,8 @@ export default function WorktopCalculator({ product: initialProduct, thicknessVa
 
   // Get available lengths from product
   const availableLengths: number[] = [];
-  if (product.length_1) availableLengths.push(product.length_1);
-  if (product.length_2) availableLengths.push(product.length_2);
+  if (product.length_1 !== undefined) availableLengths.push(product.length_1);
+  if (product.length_2 !== undefined) availableLengths.push(product.length_2);
 
   // Build available width variants from parsed width values
   const availableWidths: number[] = [];
@@ -52,16 +66,40 @@ export default function WorktopCalculator({ product: initialProduct, thicknessVa
   if (product.width_7) availableWidths.push(product.width_7);
   if (product.width_8) availableWidths.push(product.width_8);
 
+  // For legacy products: per-side price per width comes from price_{width}_m_{side} fields.
+  // For new Juan schema: derive price_1/price_2 as "is there ANY length with a price for this width+side?"
+  // so the width chip filter works the same way regardless of mode.
   const widthVariants: WidthVariant[] = availableWidths.map(width => {
+    if (usesPriceMap) {
+      const hasSide1 = availableLengths.some(l => lookupMapPrice(width, l, 1) !== undefined);
+      const hasSide2 = availableLengths.some(l => lookupMapPrice(width, l, 2) !== undefined);
+      return {
+        width,
+        hasSide1,
+        hasSide2,
+        // price_1/price_2 intentionally left undefined; price-map path reads from lookupMapPrice.
+      };
+    }
     const priceField_1 = `price_${width}_m_1` as keyof Product;
     const priceField_2 = `price_${width}_m_2` as keyof Product;
-
+    const price_1 = product[priceField_1] as number | undefined;
+    const price_2 = product[priceField_2] as number | undefined;
     return {
       width,
-      price_1: product[priceField_1] as number | undefined,
-      price_2: product[priceField_2] as number | undefined,
+      hasSide1: price_1 !== undefined,
+      hasSide2: price_2 !== undefined,
+      price_1,
+      price_2,
     };
   });
+
+  // Lengths available for the current (width, side) — only meaningful for the price-map path
+  const lengthsForCurrent: number[] = usesPriceMap && selectedWidth !== null
+    ? availableLengths.filter(l => lookupMapPrice(selectedWidth, l, selectedSide) !== undefined)
+    : availableLengths;
+
+  // Hide the length chip group when the only available length is 0 (unit-priced row with no real length dimension)
+  const showLengthGroup = !(availableLengths.length === 1 && availableLengths[0] === 0);
 
 
   // Set initial selections only if not already set, or if current selection is invalid
@@ -69,12 +107,12 @@ export default function WorktopCalculator({ product: initialProduct, thicknessVa
     // Only set width if not selected yet, or if current selection is not available
     if (widthVariants.length > 0) {
       const currentWidthVariant = selectedWidth ? widthVariants.find(v => v.width === selectedWidth) : null;
-      const currentWidthHasPrice = currentWidthVariant && (selectedSide === 1 ? currentWidthVariant.price_1 : currentWidthVariant.price_2);
+      const currentWidthHasPrice = currentWidthVariant && (selectedSide === 1 ? currentWidthVariant.hasSide1 : currentWidthVariant.hasSide2);
 
       if (!selectedWidth || !currentWidthHasPrice) {
         // Find first variant that has price for current side
         const firstAvailable = widthVariants.find(v =>
-          selectedSide === 1 ? v.price_1 : v.price_2
+          selectedSide === 1 ? v.hasSide1 : v.hasSide2
         );
         if (firstAvailable) {
           setSelectedWidth(firstAvailable.width);
@@ -83,30 +121,39 @@ export default function WorktopCalculator({ product: initialProduct, thicknessVa
     }
 
     // Only set length if not selected yet, or if current selection is not available
-    if (availableLengths.length > 0 && (!selectedLength || !availableLengths.includes(selectedLength))) {
-      setSelectedLength(availableLengths[0]);
+    if (lengthsForCurrent.length > 0 && (selectedLength === null || !lengthsForCurrent.includes(selectedLength))) {
+      setSelectedLength(lengthsForCurrent[0]);
     }
-  }, [selectedSide, selectedThickness, widthVariants, availableLengths, selectedWidth, selectedLength]);
+  }, [selectedSide, selectedThickness, widthVariants, lengthsForCurrent, selectedWidth, selectedLength]);
 
   // Calculate price based on selections
   const calculatePrice = () => {
-    if (!selectedWidth || !selectedLength) return null;
-
-    const variant = widthVariants.find(v => v.width === selectedWidth);
-    if (!variant) return null;
-
-    const priceValue = selectedSide === 1 ? variant.price_1 : variant.price_2;
-    if (!priceValue) return null;
+    if (selectedWidth === null || selectedLength === null) return null;
 
     let netPrice: number;
 
-    if (isKronospan) {
-      // For Kronospan, the price is already for the whole item, not per meter
-      netPrice = priceValue;
+    if (usesPriceMap) {
+      const priceValue = lookupMapPrice(selectedWidth, selectedLength, selectedSide);
+      if (priceValue === undefined) return null;
+      // Prices in the new Juan map are per-meter; multiply by length in meters.
+      // Exception: a length of 0 denotes a unit-priced row with no real length dimension,
+      // so the map value already IS the final net price — don't multiply by 0.
+      netPrice = selectedLength === 0 ? priceValue : priceValue * (selectedLength / 1000);
     } else {
-      // For other producers, price is per meter
-      const lengthInMeters = selectedLength / 1000;
-      netPrice = priceValue * lengthInMeters;
+      const variant = widthVariants.find(v => v.width === selectedWidth);
+      if (!variant) return null;
+
+      const priceValue = selectedSide === 1 ? variant.price_1 : variant.price_2;
+      if (!priceValue) return null;
+
+      if (isKronospan) {
+        // For Kronospan, the price is already for the whole item, not per meter
+        netPrice = priceValue;
+      } else {
+        // For other producers, price is per meter
+        const lengthInMeters = selectedLength / 1000;
+        netPrice = priceValue * lengthInMeters;
+      }
     }
 
     const grossPrice = netPrice * VAT_RATE;
@@ -185,7 +232,7 @@ export default function WorktopCalculator({ product: initialProduct, thicknessVa
           <label className="option-label">Szerokość:</label>
           <div className="chip-selector">
             {widthVariants.map((variant) => {
-              const hasPrice = selectedSide === 1 ? variant.price_1 : variant.price_2;
+              const hasPrice = selectedSide === 1 ? variant.hasSide1 : variant.hasSide2;
               if (!hasPrice) return null;
               return (
                 <button
@@ -201,20 +248,22 @@ export default function WorktopCalculator({ product: initialProduct, thicknessVa
         </div>
 
         {/* Length selection */}
-        <div className="option-group">
-          <label className="option-label">Długość:</label>
-          <div className="chip-selector">
-            {availableLengths.map((length) => (
-              <button
-                key={length}
-                className={`chip ${selectedLength === length ? 'chip-active' : ''}`}
-                onClick={() => setSelectedLength(length)}
-              >
-                {(length / 1000).toFixed(2)}m
-              </button>
-            ))}
+        {showLengthGroup && (
+          <div className="option-group">
+            <label className="option-label">Długość:</label>
+            <div className="chip-selector">
+              {lengthsForCurrent.map((length) => (
+                <button
+                  key={length}
+                  className={`chip ${selectedLength === length ? 'chip-active' : ''}`}
+                  onClick={() => setSelectedLength(length)}
+                >
+                  {(length / 1000).toFixed(2)}m
+                </button>
+              ))}
+            </div>
           </div>
-        </div>
+        )}
       </div>
 
       {/* Price display */}
