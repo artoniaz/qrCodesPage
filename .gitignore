@@ -12,6 +12,7 @@ dist
 dist-ssr
 *.local
 .env
+.claudeignore
 
 # Editor directories and files
 .vscode/*
