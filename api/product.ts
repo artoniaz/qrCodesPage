@@ -1,4 +1,4 @@
-import type { VercelRequest, VercelResponse } from './_lib/types';
+import type { VercelRequest, VercelResponse } from './_lib/types.js';
 import {
   airtableGet,
   escapeFormulaValue,
@@ -13,8 +13,8 @@ import {
   sendJson,
   setCacheHeaders,
   withGuards,
-} from './_lib/airtable';
-import { parseAirtableRecord, type Product } from './_lib/parse';
+} from './_lib/airtable.js';
+import { parseAirtableRecord, type Product } from './_lib/parse.js';
 
 interface ProductWithVariants {
   product: Product;

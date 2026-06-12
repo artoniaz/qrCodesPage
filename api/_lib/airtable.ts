@@ -1,4 +1,4 @@
-import type { VercelRequest, VercelResponse } from './types';
+import type { VercelRequest, VercelResponse } from './types.js';
 
 // Allowlisted table IDs — must mirror src/services/airtable.ts so the client and
 // server stay in agreement about which tables are addressable. If a new table
