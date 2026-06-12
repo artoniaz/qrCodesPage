@@ -12,7 +12,12 @@ export const REGULAR_TABLE_IDS = [
   'tblsEnC8rEzMpe3rC',
 ];
 
-export const FRONT_TABLE_ID = 'tblHkykZmLJghpL6Z';
+// Consolidated front table. Fronts are addressed by the {id} field (which
+// preserves the legacy QR record ID), NOT by Airtable record ID — so this must
+// be the real table ID, since filterByFormula runs against the list endpoint
+// where the table segment is authoritative (unlike get-by-id, which resolves a
+// record base-wide and ignores the table).
+export const FRONT_TABLE_ID = 'tblccHiGcVi7bSyNh';
 
 const REGULAR_TABLE_SET = new Set(REGULAR_TABLE_IDS);
 

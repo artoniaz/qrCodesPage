@@ -30,16 +30,19 @@ interface AirtableListResponse {
   records?: AirtableRecord[];
 }
 
-// Look up a Juan blat in the consolidated table by {id} field. The {id} field
-// preserves the legacy Airtable record ID for migrated rows, so old QR codes
-// keep resolving even though the underlying record now has a new Airtable id.
-async function fetchJuanByIdField(
+// Look up a record in a consolidated table by its {id} field. The {id} field
+// preserves the legacy Airtable record ID for migrated/synced rows, so old QR
+// codes keep resolving even when the underlying record has a different Airtable
+// id (e.g. records pulled in via a synced table get fresh ids). Used for both
+// Juan blaty and fronts.
+async function fetchByIdField(
   recordId: string,
   baseId: string,
+  tableId: string,
   token: string,
 ): Promise<AirtableRecord | null> {
   const formula = `{id}='${escapeFormulaValue(recordId)}'`;
-  const url = `https://api.airtable.com/v0/${baseId}/${JUAN_TABLE_ID}?filterByFormula=${encodeURIComponent(formula)}&maxRecords=1`;
+  const url = `https://api.airtable.com/v0/${baseId}/${tableId}?filterByFormula=${encodeURIComponent(formula)}&maxRecords=1`;
   const result = await airtableGet(url, token);
   if (!result.ok) return null;
   const data = result.data as AirtableListResponse;
@@ -77,17 +80,34 @@ async function fetchProduct(
   const { token, baseId, frontBaseId } = getAirtableConfig();
 
   if (productType === 'front') {
-    const url = `https://api.airtable.com/v0/${frontBaseId}/${FRONT_TABLE_ID}/${recordId}`;
-    const result = await airtableGet(url, token);
-    if (!result.ok) {
-      throw new HttpError(404, `Product ${recordId} not found`);
+    // PRIMARY: the consolidated "frontpol widok publiczny" table is synced from
+    // another table, so its records carry fresh Airtable record IDs that differ
+    // from the QR-encoded ID. It preserves the original QR ID in the {id} text
+    // field, so it must be matched by {id}, NOT by record ID.
+    const record = await fetchByIdField(recordId, frontBaseId, FRONT_TABLE_ID, token);
+    if (record) {
+      return { product: parseAirtableRecord(record) };
     }
-    return { product: parseAirtableRecord(result.data as AirtableRecord) };
+
+    // FALLBACK: every other front table (stylfront, carlack, dekorapol, wiech,
+    // slawpol, brw, legacy frontpol) keeps its native Airtable record ID, which
+    // is exactly what the QR encodes. get-by-id resolves a record base-wide and
+    // ignores the table segment, so this single lookup reaches whichever front
+    // table the record actually lives in.
+    const result = await airtableGet(
+      `https://api.airtable.com/v0/${frontBaseId}/${FRONT_TABLE_ID}/${recordId}`,
+      token,
+    );
+    if (result.ok) {
+      return { product: parseAirtableRecord(result.data as AirtableRecord) };
+    }
+
+    throw new HttpError(404, `Product ${recordId} not found`);
   }
 
   // PRIMARY PATH: Juan blaty. Look up by {id} field — this is the only way to
   // reach migrated records (their underlying record id changed).
-  const juanRecord = await fetchJuanByIdField(recordId, baseId, token);
+  const juanRecord = await fetchByIdField(recordId, baseId, JUAN_TABLE_ID, token);
   if (juanRecord) {
     const product = parseAirtableRecord(juanRecord);
     const thicknessVariants = await fetchJuanThicknessVariants(product, baseId, token);
