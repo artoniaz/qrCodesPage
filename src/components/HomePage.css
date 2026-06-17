@@ -1,0 +1,176 @@
+.home {
+  --wine: #971b2e;
+  --wine-deep: #5e0f1c;
+  --ink: #1b1614;
+  --ink-soft: #5a524e;
+
+  min-height: 100vh;
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 2rem;
+  box-sizing: border-box;
+
+  /* Same background as the product pages */
+  background-image: linear-gradient(
+      rgba(255, 255, 255, 0.5),
+      rgba(255, 255, 255, 0.5)
+    ),
+    url("../assets/soft-grey-organic-leaves-background-with-text-space_1017-60373.jpg");
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+  background-attachment: fixed;
+
+  color: var(--ink);
+  font-family: "Archivo", system-ui, Avenir, Helvetica, Arial, sans-serif;
+  text-align: center;
+}
+
+.home-card {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0;
+  max-width: 640px;
+  width: 100%;
+  padding: clamp(2rem, 5vw, 3.5rem);
+  background: rgba(255, 255, 255, 0.72);
+  border: 1px solid rgba(151, 27, 46, 0.18);
+  border-radius: 20px;
+  box-shadow: 0 30px 70px -40px rgba(27, 22, 20, 0.55);
+  backdrop-filter: blur(4px);
+  animation: home-in 0.6s cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+.home-logo {
+  height: clamp(120px, 22vw, 180px);
+  width: auto;
+  display: block;
+}
+
+.home-greeting {
+  margin: 1.6rem 0 0;
+  font-family: "Archivo Expanded", "Archivo", sans-serif;
+  font-weight: 800;
+  font-size: clamp(2.4rem, 7vw, 3.6rem);
+  line-height: 1;
+  letter-spacing: -0.02em;
+  color: var(--wine);
+}
+
+.home-sub {
+  margin: 0.5rem 0 0;
+  font-size: clamp(0.8rem, 2.2vw, 1rem);
+  text-transform: uppercase;
+  letter-spacing: 0.22em;
+  color: var(--ink-soft);
+}
+
+/* ---------- Scan icon ---------- */
+.scan {
+  position: relative;
+  margin: clamp(1.8rem, 5vw, 2.8rem) 0 clamp(1.4rem, 4vw, 2rem);
+  width: clamp(110px, 26vw, 150px);
+  height: clamp(110px, 26vw, 150px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--wine);
+}
+
+.scan-icon {
+  width: 100%;
+  height: 100%;
+  animation: scan-pulse 2.2s ease-in-out infinite;
+}
+
+.scan-line {
+  position: absolute;
+  left: 8%;
+  right: 8%;
+  height: 3px;
+  border-radius: 3px;
+  background: linear-gradient(
+    90deg,
+    transparent,
+    var(--wine) 20%,
+    var(--wine) 80%,
+    transparent
+  );
+  box-shadow: 0 0 14px 2px rgba(151, 27, 46, 0.5);
+  animation: scan-sweep 2.2s ease-in-out infinite;
+}
+
+/* ---------- Instruction ---------- */
+.home-instruction {
+  margin: 0;
+  font-family: "Archivo Expanded", "Archivo", sans-serif;
+  font-weight: 700;
+  font-size: clamp(1.4rem, 4.5vw, 2rem);
+  line-height: 1.15;
+  letter-spacing: -0.01em;
+  color: var(--ink);
+}
+
+.home-hint {
+  margin: 0.9rem 0 0;
+  font-size: clamp(0.95rem, 2.6vw, 1.15rem);
+  line-height: 1.5;
+  color: var(--ink-soft);
+}
+
+/* ---------- Motion ---------- */
+@keyframes home-in {
+  from {
+    opacity: 0;
+    transform: translateY(16px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes scan-pulse {
+  0%,
+  100% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(1.05);
+  }
+}
+
+@keyframes scan-sweep {
+  0% {
+    top: 18%;
+    opacity: 0;
+  }
+  20% {
+    opacity: 1;
+  }
+  80% {
+    opacity: 1;
+  }
+  100% {
+    top: 82%;
+    opacity: 0;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .home * {
+    animation: none !important;
+  }
+}
+
+@media (max-width: 600px) {
+  .home {
+    padding: 1.2rem;
+  }
+  .home-card {
+    border-radius: 16px;
+  }
+}
