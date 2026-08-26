@@ -1,4 +1,12 @@
+// Mirrors api/_lib/parse.ts. 'front_arkusz' is the consolidated sheet+front
+// schema — a front made by one producer on a sheet made by another, so the view
+// has to show both sets of attributes side by side.
+export type ProductKind = 'blat' | 'front' | 'front_arkusz' | 'other';
+
 export interface Product {
+  // Which view to render. Derived from the record's fields by the API, not from
+  // the URL the visitor arrived on.
+  kind: ProductKind;
   id: string;
   decor: string;
   structure: string;
@@ -53,6 +61,16 @@ export interface Product {
   czas_oczekiwania?: string;
   cena_brutto?: number;
   cena_brutto_laser?: number;
+  // Sheet+front fields: the front and the sheet it is applied to come from
+  // different producers and have independent lead times.
+  producent_front?: string;
+  producent_arkusz?: string;
+  arkusz_dlugosc?: number;
+  arkusz_szerokosc?: number;
+  arkusz_grubosc?: number;
+  arkusz_czas_oczekiwania?: string;
+  // Defined in Airtable, not derived from cena_brutto x sheet area.
+  cena_brutto_arkusz?: number;
   // Price visibility flag (set in Airtable when prices are being updated)
   ukryj_cene?: boolean;
   // New Juan blaty schema (single consolidated table)

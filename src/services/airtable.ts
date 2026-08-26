@@ -12,8 +12,10 @@ const TABLE_IDS = [
 const TABLE_ID_SET = new Set(TABLE_IDS);
 
 // Reject obviously bad IDs before round-tripping to the API. Server applies
-// the same regex; this is a UX optimization, not a security boundary.
-const RECORD_ID_RE = /^rec[A-Za-z0-9]{14}$/;
+// the same regex; this is a UX optimization, not a security boundary. The
+// range (rather than a fixed 17 chars) tolerates a stray character in the
+// consolidated tables' hand-maintained {id} field — see api/_lib/airtable.ts.
+const RECORD_ID_RE = /^rec[A-Za-z0-9]{14,21}$/;
 
 export interface ProductWithVariants {
   product: Product;

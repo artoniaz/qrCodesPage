@@ -7,6 +7,11 @@
 // build is independent of the Vite bundle and we don't want the server
 // reaching into the SPA source tree.
 export interface Product {
+  // Discriminates which view the SPA should render. Derived from the record's
+  // field-set, NOT from the URL the visitor arrived on — the same record can be
+  // reached through /product/:id or /product/front/:id depending on when its QR
+  // code was printed.
+  kind: ProductKind;
   id: string;
   decor: string;
   structure: string;
@@ -58,12 +63,32 @@ export interface Product {
   cena_brutto?: number;
   cena_brutto_laser?: number;
   ukryj_cene?: boolean;
+  // Sheet+front schema. The front and the sheet come from different producers
+  // and have independent lead times, so neither can collapse into `producer` /
+  // `czas_oczekiwania` alone.
+  producent_front?: string;
+  producent_arkusz?: string;
+  arkusz_dlugosc?: number;
+  arkusz_szerokosc?: number;
+  arkusz_grubosc?: number;
+  arkusz_czas_oczekiwania?: string;
+  // Priced independently of the front — NOT derived from cena_brutto and the
+  // sheet's area. Both numbers come straight from Airtable.
+  cena_brutto_arkusz?: number;
   prices?: Record<string, number>;
   sideKeys?: { 1?: string; 2?: string };
   kolekcja?: string;
   qr_id?: string;
   is_new?: boolean;
 }
+
+// 'blat'        → Juan / Kronospan worktop, rendered with the price calculator
+// 'front'       → front-only record (stylfront, carlack, brw, …)
+// 'front_arkusz'→ consolidated sheet+front record ("niemann_frontpol widok
+//                 publiczny"): a front made by one producer on a sheet made by
+//                 another, so both sets of attributes must be shown together
+// 'other'       → plain board / accessory record
+export type ProductKind = 'blat' | 'front' | 'front_arkusz' | 'other';
 
 interface AirtableRecord {
   id: string;
@@ -163,6 +188,15 @@ function parseZaobleniaAndKeys(
   return { side, sideKeys };
 }
 
+function parseNumber(value: unknown): number | undefined {
+  if (typeof value === 'number') return isNaN(value) ? undefined : value;
+  if (typeof value === 'string') {
+    const parsed = parseFloat(value.replace(',', '.').trim());
+    return isNaN(parsed) ? undefined : parsed;
+  }
+  return undefined;
+}
+
 function asString(v: unknown): string | undefined {
   if (v === undefined || v === null) return undefined;
   return String(v);
@@ -183,6 +217,7 @@ export function parseAirtableRecord(record: AirtableRecord): Product {
       (f['﻿qr_id'] as string | undefined) ??
       undefined;
     return {
+      kind: 'blat',
       id: record.id,
       decor: f.dekor !== undefined && f.dekor !== null ? String(f.dekor) : '',
       structure: (f.struktura as string) || '',
@@ -228,17 +263,78 @@ export function parseAirtableRecord(record: AirtableRecord): Product {
     };
   }
 
+  // Sheet+front schema ("niemann_frontpol widok publiczny"). Detected by the
+  // producer split, which is what makes this schema distinct: the sheet and the
+  // front it is fronted with come from two different manufacturers.
+  const isSheetFrontSchema =
+    f.producent_front !== undefined ||
+    f.producent_arkusz !== undefined ||
+    f.front_czas_oczekiwania !== undefined;
+
+  if (isSheetFrontSchema) {
+    const frontProducer = asString(f.producent_front);
+    return {
+      kind: 'front_arkusz',
+      id: record.id,
+      decor: '',
+      structure: '',
+      name: '',
+      sellUnit: '',
+      price: 0,
+      category: '',
+      description: '',
+      code: '',
+      thickness: parseNumber(f.arkusz_grubosc) ?? 0,
+      typePrice: '',
+      url: (f.url as string) || '',
+      'url + code': '',
+      // `producer` keeps meaning "who made the thing on the shelf" — the front.
+      // The sheet's producer is exposed separately below.
+      producer: frontProducer,
+      front_typ: asString(f.front_typ),
+      frez_typ: asString(f.frez_typ),
+      kolor: asString(f.kolor),
+      info: asString(f.info),
+      // Two independent lead times. `czas_oczekiwania` mirrors the front's so
+      // consumers that only know the front schema keep working.
+      czas_oczekiwania: asString(f.front_czas_oczekiwania),
+      // The sheet+front table splits the price the same way it splits the
+      // producer and the lead time: `cena_brutto` mirrors the front's so the
+      // shared front rendering keeps working.
+      cena_brutto: parsePrice(f.cena_brutto_front),
+      cena_brutto_arkusz: parsePrice(f.cena_brutto_arkusz),
+      producent_front: frontProducer,
+      producent_arkusz: asString(f.producent_arkusz),
+      arkusz_dlugosc: parseNumber(f.arkusz_dlugosc),
+      // Airtable field is misspelled ("szczerokosc"); normalized here so the
+      // typo stops at the API boundary.
+      arkusz_szerokosc: parseNumber(f.arkusz_szczerokosc ?? f.arkusz_szerokosc),
+      arkusz_grubosc: parseNumber(f.arkusz_grubosc),
+      arkusz_czas_oczekiwania: asString(f.arkusz_czas_oczekiwania),
+      qr_id: asString(f.id),
+      ukryj_cene: f.ukryj_cene === true,
+    };
+  }
+
   const parsedLengths = parseLength(f.length);
   const parsedWidths = parseWidth(f.width);
+  const category = (f.category as string) || '';
+  const kind: ProductKind =
+    category.toLowerCase() === 'blat'
+      ? 'blat'
+      : f.front_typ !== undefined
+        ? 'front'
+        : 'other';
 
   return {
+    kind,
     id: record.id,
     decor: (f.decor as string) || '',
     structure: (f.structure as string) || '',
     name: (f.name as string) || '',
     sellUnit: (f.sellUnit as string) || '',
     price: (f.price as number) || 0,
-    category: (f.category as string) || '',
+    category,
     description: (f.description as string) || '',
     code: (f.code as string) || '',
     thickness: (f.thickness as number) || 0,

@@ -1,8 +1,41 @@
 import { useEffect, useState } from "react";
 import { useParams, useLocation } from "react-router-dom";
 import { fetchProduct, type ProductWithVariants } from "../services/airtable";
+import type { ProductKind } from "../types/product";
 import WorktopCalculator from "./WorktopCalculator";
 import "./ProductPage.css";
+
+const PRICE_HIDDEN_NOTICE = "zmiana cennika, tymczasowo proszę pytać obsługę";
+
+// Neither sales form is an Airtable field — they are inherent to the sheet+front
+// schema: the sheet is sold whole, the front by the square metre.
+const SHEET_SELL_UNIT = "arkusz";
+const FRONT_SELL_UNIT = "sprzedaż na m²";
+
+// 0 is how Airtable records "no catalogue price yet" — never a free product.
+function formatPrice(value: number, unit: string): string {
+  return value > 0
+    ? `${value.toFixed(2)} zł brutto / ${unit}`
+    : "wycena indywidualna";
+}
+
+// A labelled row that renders nothing when the underlying Airtable field is
+// empty. Most of this page is exactly that shape.
+function InfoRow({
+  label,
+  value,
+}: {
+  label: string;
+  value?: string | number | null;
+}) {
+  if (value === undefined || value === null || value === "") return null;
+  return (
+    <div className="info-row">
+      <span className="info-label">{label}:</span>
+      <span className="info-value-simple">{value}</span>
+    </div>
+  );
+}
 
 export default function ProductPage() {
   const { id } = useParams<{ id: string }>();
@@ -80,16 +113,48 @@ export default function ProductPage() {
   }
 
   const { product, thicknessVariants } = productData;
-  const isWorktop = product.category.toLowerCase() === "blat";
-  const isFront = location.pathname.includes('/product/front/');
+  // Which view to render comes from the record's own fields, not from the route
+  // — the same record is reachable through both /product/:id and
+  // /product/front/:id depending on when its QR code was printed. The
+  // path/category heuristic survives only as a fallback for responses still
+  // being served from an edge cache that predates the `kind` field.
+  const kind: ProductKind =
+    product.kind ??
+    (location.pathname.includes("/product/front/")
+      ? "front"
+      : product.category.toLowerCase() === "blat"
+        ? "blat"
+        : "other");
+  const isWorktop = kind === "blat";
+  // Sheet+front record: one product, two producers, two lead times.
+  const isSheetFront = kind === "front_arkusz";
+  const isFront = kind === "front" || isSheetFront;
   const isPriceHidden = product.ukryj_cene === true;
+
+  // On a sheet+front record the sheet is the product on the shelf, so the page
+  // is titled by the colour — matching the printed sample label — rather than
+  // by a generic "Front Meblowy".
+  const title = isSheetFront
+    ? product.kolor || product.front_typ || "Front meblowy"
+    : isFront
+      ? "Front Meblowy"
+      : product.name;
+
+  // "2800 × 1300 × 18", skipping whatever Airtable leaves blank.
+  const sheetDimensions = [
+    product.arkusz_dlugosc,
+    product.arkusz_szerokosc,
+    product.arkusz_grubosc,
+  ]
+    .filter((v): v is number => typeof v === "number" && v > 0)
+    .join(" × ");
 
   const hasProductInfo = product.decor || product.structure || product.category || product.description;
 
   return (
     <div className="product-page">
       <div className="product-container">
-        <h1 className="product-title">{isFront ? "Front Meblowy" : product.name}</h1>
+        <h1 className="product-title">{title}</h1>
 
         {hasProductInfo && (
           <div className="product-info">
@@ -129,7 +194,7 @@ export default function ProductPage() {
                 <div className="variant-row">
                   <span className="variant-label">Cena:</span>
                   <span className="variant-value price">
-                    zmiana cennika, tymczasowo proszę pytać obsługę
+                    {PRICE_HIDDEN_NOTICE}
                   </span>
                 </div>
 
@@ -226,51 +291,16 @@ export default function ProductPage() {
           </>
         )}
 
-        {!isWorktop && isFront && (
+        {kind === "front" && (
           <div className="worktop-basic-info front-info">
-            {product.producer && (
-              <div className="info-row">
-                <span className="info-label">Producent:</span>
-                <span className="info-value-simple">{product.producer}</span>
-              </div>
-            )}
-            {product.front_typ && (
-              <div className="info-row">
-                <span className="info-label">Typ frontu:</span>
-                <span className="info-value-simple">{product.front_typ}</span>
-              </div>
-            )}
-            {product.frez_typ && (
-              <div className="info-row">
-                <span className="info-label">Frez:</span>
-                <span className="info-value-simple">{product.frez_typ}</span>
-              </div>
-            )}
-            {product.kolor && (
-              <div className="info-row">
-                <span className="info-label">Kolor:</span>
-                <span className="info-value-simple">{product.kolor}</span>
-              </div>
-            )}
-            {product.info && (
-              <div className="info-row">
-                <span className="info-label">Informacje:</span>
-                <span className="info-value-simple">{product.info}</span>
-              </div>
-            )}
-            {product.czas_oczekiwania && (
-              <div className="info-row">
-                <span className="info-label">Czas oczekiwania:</span>
-                <span className="info-value-simple">{product.czas_oczekiwania}</span>
-              </div>
-            )}
+            <InfoRow label="Producent" value={product.producer} />
+            <InfoRow label="Typ frontu" value={product.front_typ} />
+            <InfoRow label="Frez" value={product.frez_typ} />
+            <InfoRow label="Kolor" value={product.kolor} />
+            <InfoRow label="Informacje" value={product.info} />
+            <InfoRow label="Czas oczekiwania" value={product.czas_oczekiwania} />
             {isPriceHidden ? (
-              <div className="info-row">
-                <span className="info-label">Cena:</span>
-                <span className="info-value-simple">
-                  zmiana cennika, tymczasowo proszę pytać obsługę
-                </span>
-              </div>
+              <InfoRow label="Cena" value={PRICE_HIDDEN_NOTICE} />
             ) : product.cena_brutto !== undefined && product.cena_brutto_laser !== undefined && product.cena_brutto_laser > 0 ? (
               <div className="engraving-price-table">
                 <table>
@@ -284,25 +314,65 @@ export default function ProductPage() {
                   <tbody>
                     <tr>
                       <td>Cena:</td>
-                      <td>
-                        {product.cena_brutto > 0
-                          ? `${product.cena_brutto.toFixed(2)} zł brutto / m²`
-                          : 'wycena indywidualna'}
-                      </td>
-                      <td>{product.cena_brutto_laser.toFixed(2)} zł brutto / m²</td>
+                      <td>{formatPrice(product.cena_brutto, "m²")}</td>
+                      <td>{formatPrice(product.cena_brutto_laser, "m²")}</td>
                     </tr>
                   </tbody>
                 </table>
               </div>
             ) : product.cena_brutto !== undefined ? (
-              <div className="info-row">
-                <span className="info-label">Cena:</span>
-                <span className="info-value-simple">
-                  {product.cena_brutto > 0
-                    ? `${product.cena_brutto.toFixed(2)} zł brutto / m²`
-                    : 'wycena indywidualna'}
-                </span>
-              </div>
+              <InfoRow
+                label="Cena"
+                value={formatPrice(product.cena_brutto, "m²")}
+              />
+            ) : null}
+          </div>
+        )}
+
+        {/* Sheet first and unheaded — it is the product being sold; the front is
+            the finish applied to it. Row order mirrors the printed sample label
+            so the screen reads like the sticker the customer just scanned. */}
+        {isSheetFront && (
+          <div className="worktop-basic-info sheet-front-group sheet-info">
+            <InfoRow label="Producent" value={product.producent_arkusz} />
+            <InfoRow label="Typ" value={product.front_typ} />
+            <InfoRow label="Informacje" value={product.info} />
+            <InfoRow
+              label="Dostępność"
+              value={product.arkusz_czas_oczekiwania}
+            />
+            <InfoRow
+              label="Wymiary"
+              value={sheetDimensions ? `${sheetDimensions} mm` : undefined}
+            />
+            <InfoRow label="Forma sprzedaży" value={SHEET_SELL_UNIT} />
+            {/* Priced on its own in Airtable — never derived from the front's
+                per-m² price and the sheet's area. */}
+            {isPriceHidden ? (
+              <InfoRow label="Cena" value={PRICE_HIDDEN_NOTICE} />
+            ) : product.cena_brutto_arkusz !== undefined ? (
+              <InfoRow
+                label="Cena"
+                value={formatPrice(product.cena_brutto_arkusz, "szt.")}
+              />
+            ) : null}
+          </div>
+        )}
+
+        {isSheetFront && (
+          <div className="worktop-basic-info sheet-front-group front-info">
+            <h2 className="info-group-title">Front meblowy</h2>
+            <InfoRow label="Producent" value={product.producent_front} />
+            <InfoRow label="Frezowanie" value={product.frez_typ} />
+            <InfoRow label="Dostępność" value={product.czas_oczekiwania} />
+            <InfoRow label="Forma sprzedaży" value={FRONT_SELL_UNIT} />
+            {isPriceHidden ? (
+              <InfoRow label="Cena" value={PRICE_HIDDEN_NOTICE} />
+            ) : product.cena_brutto !== undefined ? (
+              <InfoRow
+                label="Cena"
+                value={formatPrice(product.cena_brutto, "m²")}
+              />
             ) : null}
           </div>
         )}

@@ -283,6 +283,30 @@
   margin-bottom: 0.25rem;
 }
 
+/* Sheet+front records render two groups: the sheet (unheaded — it is the
+   product on the shelf) and the front applied to it. Mirrors the printed sample
+   label, where only the second block carries a bold heading. */
+.info-group-title {
+  margin: 0 0 0.35rem;
+  color: #000;
+  font-size: 1rem;
+  font-weight: 700;
+  text-align: left;
+}
+
+.front-info:has(.info-group-title) {
+  padding-top: 0.75rem;
+}
+
+/* "Forma sprzedaży:" is wider than any label the other views use. */
+.sheet-front-group .info-row {
+  grid-template-columns: 155px 1fr;
+}
+
+.sheet-info {
+  margin-top: 0;
+}
+
 .engraving-price-table {
   width: 100%;
   margin-top: 0.5rem;
@@ -407,6 +431,10 @@
 
   .variant-value {
     text-align: left;
+  }
+
+  .info-group-title {
+    font-size: 0.9rem;
   }
 
   .engraving-price-table {
