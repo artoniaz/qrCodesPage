@@ -72,6 +72,29 @@ async function fetchJuanThicknessVariants(
   return variants.length > 0 ? variants : undefined;
 }
 
+// Probe a table by native Airtable record ID. get-by-id resolves a record
+// base-wide and ignores the table segment, so a single call reaches whichever
+// table in that base the record actually lives in.
+async function fetchByRecordId(
+  recordId: string,
+  baseId: string,
+  tableId: string,
+  token: string,
+): Promise<AirtableRecord | null> {
+  const result = await airtableGet(
+    `https://api.airtable.com/v0/${baseId}/${tableId}/${recordId}`,
+    token,
+  );
+  return result.ok ? (result.data as AirtableRecord) : null;
+}
+
+interface Probe {
+  // Marks the Juan consolidated table so a hit there can pull thickness
+  // variants; every other source has no variant concept.
+  juan?: boolean;
+  run: () => Promise<AirtableRecord | null>;
+}
+
 async function fetchProduct(
   recordId: string,
   productType: 'regular' | 'front',
@@ -79,58 +102,61 @@ async function fetchProduct(
 ): Promise<ProductWithVariants> {
   const { token, baseId, frontBaseId } = getAirtableConfig();
 
-  if (productType === 'front') {
-    // PRIMARY: the consolidated "frontpol widok publiczny" table is synced from
-    // another table, so its records carry fresh Airtable record IDs that differ
-    // from the QR-encoded ID. It preserves the original QR ID in the {id} text
-    // field, so it must be matched by {id}, NOT by record ID.
-    const record = await fetchByIdField(recordId, frontBaseId, FRONT_TABLE_ID, token);
-    if (record) {
-      return { product: parseAirtableRecord(record) };
-    }
+  // The consolidated tables are synced from elsewhere, so their records carry
+  // fresh Airtable record IDs that differ from the QR-encoded one. Both
+  // preserve the original ID in an {id} text field and must be matched on it.
+  const juanByIdField: Probe = {
+    juan: true,
+    run: () => fetchByIdField(recordId, baseId, JUAN_TABLE_ID, token),
+  };
+  const frontByIdField: Probe = {
+    run: () => fetchByIdField(recordId, frontBaseId, FRONT_TABLE_ID, token),
+  };
+  // Every other front table (stylfront, carlack, dekorapol, wiech, slawpol,
+  // brw, legacy frontpol) keeps its native record ID — one base-wide get.
+  const frontByRecordId: Probe = {
+    run: () => fetchByRecordId(recordId, frontBaseId, FRONT_TABLE_ID, token),
+  };
+  // Legacy per-producer board tables, addressed by record ID. The Juan table is
+  // excluded — its records aren't addressable that way. A caller-supplied hint
+  // only reorders the probe list; it never restricts it.
+  const legacyBoards: Probe = {
+    run: async () => {
+      const tables = REGULAR_TABLE_IDS.filter((t) => t !== JUAN_TABLE_ID);
+      const tryOrder =
+        tableIdHint && tables.includes(tableIdHint)
+          ? [tableIdHint, ...tables.filter((t) => t !== tableIdHint)]
+          : tables;
+      for (const tableId of tryOrder) {
+        const record = await fetchByRecordId(recordId, baseId, tableId, token);
+        if (record) return record;
+      }
+      return null;
+    },
+  };
 
-    // FALLBACK: every other front table (stylfront, carlack, dekorapol, wiech,
-    // slawpol, brw, legacy frontpol) keeps its native Airtable record ID, which
-    // is exactly what the QR encodes. get-by-id resolves a record base-wide and
-    // ignores the table segment, so this single lookup reaches whichever front
-    // table the record actually lives in.
-    const result = await airtableGet(
-      `https://api.airtable.com/v0/${frontBaseId}/${FRONT_TABLE_ID}/${recordId}`,
-      token,
-    );
-    if (result.ok) {
-      return { product: parseAirtableRecord(result.data as AirtableRecord) };
-    }
+  // A record is looked up in EVERY source regardless of which route the visitor
+  // arrived on. QR codes printed at different times encode different URL shapes
+  // for the same record — most notably the sheet+front table, whose {url} field
+  // points at /product/:id while its data is a front — so the path can only be
+  // treated as an ordering hint, never as a filter.
+  const probes: Probe[] =
+    productType === 'front'
+      ? [frontByIdField, frontByRecordId, juanByIdField, legacyBoards]
+      : [juanByIdField, frontByIdField, legacyBoards, frontByRecordId];
 
-    throw new HttpError(404, `Product ${recordId} not found`);
+  for (const probe of probes) {
+    const record = await probe.run();
+    if (!record) continue;
+    const product = parseAirtableRecord(record);
+    if (probe.juan) {
+      const thicknessVariants = await fetchJuanThicknessVariants(product, baseId, token);
+      return { product, thicknessVariants };
+    }
+    return { product };
   }
 
-  // PRIMARY PATH: Juan blaty. Look up by {id} field — this is the only way to
-  // reach migrated records (their underlying record id changed).
-  const juanRecord = await fetchByIdField(recordId, baseId, JUAN_TABLE_ID, token);
-  if (juanRecord) {
-    const product = parseAirtableRecord(juanRecord);
-    const thicknessVariants = await fetchJuanThicknessVariants(product, baseId, token);
-    return { product, thicknessVariants };
-  }
-
-  // FALLBACK PATH: legacy per-producer tables, addressed by record ID. Try
-  // the hinted table first when present, then the rest in order. Juan table
-  // is excluded — its records aren't addressable by record ID.
-  const fallbackTables = REGULAR_TABLE_IDS.filter((t) => t !== JUAN_TABLE_ID);
-  const tryOrder = tableIdHint && fallbackTables.includes(tableIdHint)
-    ? [tableIdHint, ...fallbackTables.filter((t) => t !== tableIdHint)]
-    : fallbackTables;
-
-  for (const tableId of tryOrder) {
-    const url = `https://api.airtable.com/v0/${baseId}/${tableId}/${recordId}`;
-    const result = await airtableGet(url, token);
-    if (result.ok) {
-      return { product: parseAirtableRecord(result.data as AirtableRecord) };
-    }
-  }
-
-  throw new HttpError(404, `Product ${recordId} not found in any table`);
+  throw new HttpError(404, `Product ${recordId} not found`);
 }
 
 export default withGuards(async (req: VercelRequest, res: VercelResponse) => {

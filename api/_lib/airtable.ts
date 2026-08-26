@@ -21,7 +21,13 @@ export const FRONT_TABLE_ID = 'tblccHiGcVi7bSyNh';
 
 const REGULAR_TABLE_SET = new Set(REGULAR_TABLE_IDS);
 
-export const RECORD_ID_RE = /^rec[A-Za-z0-9]{14}$/;
+// Airtable's own record IDs are always 17 characters, but the consolidated
+// tables match on a free-text {id} field holding hand-maintained legacy IDs,
+// where a stray character is possible. Accept a small range so a QR code that
+// was printed from such a value still resolves rather than 400-ing at the
+// kiosk; the value is length-capped and escaped before it ever reaches a
+// filterByFormula.
+export const RECORD_ID_RE = /^rec[A-Za-z0-9]{14,21}$/;
 
 // Reasonable cap on the {id}/{dekor}/{struktura}/{kolekcja} field values we'll
 // interpolate into a filterByFormula. The Airtable record IDs we migrate from
