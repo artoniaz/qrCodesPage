@@ -1,6 +1,7 @@
 // Mirrors api/_lib/parse.ts. 'front_arkusz' is the consolidated sheet+front
 // schema — a front made by one producer on a sheet made by another, so the view
-// has to show both sets of attributes side by side.
+// has to show both sets of attributes side by side. Rows of that same table
+// whose sheet half is empty are tagged 'front' and use the ordinary front view.
 export type ProductKind = 'blat' | 'front' | 'front_arkusz' | 'other';
 
 export interface Product {

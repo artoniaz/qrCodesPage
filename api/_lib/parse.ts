@@ -83,7 +83,8 @@ export interface Product {
 }
 
 // 'blat'        → Juan / Kronospan worktop, rendered with the price calculator
-// 'front'       → front-only record (stylfront, carlack, brw, …)
+// 'front'       → front-only record (stylfront, carlack, brw, …), plus the rows
+//                 of the sheet+front table that have no sheet half filled in
 // 'front_arkusz'→ consolidated sheet+front record ("niemann_frontpol widok
 //                 publiczny"): a front made by one producer on a sheet made by
 //                 another, so both sets of attributes must be shown together
@@ -273,8 +274,27 @@ export function parseAirtableRecord(record: AirtableRecord): Product {
 
   if (isSheetFrontSchema) {
     const frontProducer = asString(f.producent_front);
+    const sheetProducer = asString(f.producent_arkusz);
+    const sheetLength = parseNumber(f.arkusz_dlugosc);
+    // Airtable field is misspelled ("szczerokosc"); normalized here so the
+    // typo stops at the API boundary.
+    const sheetWidth = parseNumber(f.arkusz_szczerokosc ?? f.arkusz_szerokosc);
+    const sheetThickness = parseNumber(f.arkusz_grubosc);
+
+    // Some rows of this table are a plain front with no sheet behind it. The
+    // sheet half is then simply absent in Airtable and the combined view has
+    // nothing to show, so such a record renders through the ordinary front
+    // view instead. Presence is decided by the producer and the dimensions:
+    // cena_brutto_arkusz is 0 and arkusz_czas_oczekiwania is blank on EVERY
+    // row of the table today, so neither carries any signal.
+    const hasSheet =
+      (sheetProducer !== undefined && sheetProducer.trim() !== '') ||
+      [sheetLength, sheetWidth, sheetThickness].some(
+        (v) => typeof v === 'number' && v > 0,
+      );
+
     return {
-      kind: 'front_arkusz',
+      kind: hasSheet ? 'front_arkusz' : 'front',
       id: record.id,
       decor: '',
       structure: '',
@@ -284,7 +304,7 @@ export function parseAirtableRecord(record: AirtableRecord): Product {
       category: '',
       description: '',
       code: '',
-      thickness: parseNumber(f.arkusz_grubosc) ?? 0,
+      thickness: sheetThickness ?? 0,
       typePrice: '',
       url: (f.url as string) || '',
       'url + code': '',
@@ -304,12 +324,10 @@ export function parseAirtableRecord(record: AirtableRecord): Product {
       cena_brutto: parsePrice(f.cena_brutto_front),
       cena_brutto_arkusz: parsePrice(f.cena_brutto_arkusz),
       producent_front: frontProducer,
-      producent_arkusz: asString(f.producent_arkusz),
-      arkusz_dlugosc: parseNumber(f.arkusz_dlugosc),
-      // Airtable field is misspelled ("szczerokosc"); normalized here so the
-      // typo stops at the API boundary.
-      arkusz_szerokosc: parseNumber(f.arkusz_szczerokosc ?? f.arkusz_szerokosc),
-      arkusz_grubosc: parseNumber(f.arkusz_grubosc),
+      producent_arkusz: sheetProducer,
+      arkusz_dlugosc: sheetLength,
+      arkusz_szerokosc: sheetWidth,
+      arkusz_grubosc: sheetThickness,
       arkusz_czas_oczekiwania: asString(f.arkusz_czas_oczekiwania),
       qr_id: asString(f.id),
       ukryj_cene: f.ukryj_cene === true,
