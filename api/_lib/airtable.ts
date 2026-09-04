@@ -19,6 +19,13 @@ export const REGULAR_TABLE_IDS = [
 // record base-wide and ignores the table).
 export const FRONT_TABLE_ID = 'tblccHiGcVi7bSyNh';
 
+// Dekorapol fronts, synced in from the pricing base. The sync assigns fresh
+// record IDs, so the QR-encoded ID survives only in the {id} text field and
+// this table is matched the same way FRONT_TABLE_ID is. Deliberately NOT part
+// of REGULAR_TABLE_IDS: it is a front table and never arrives as a table hint,
+// so the client-side mirror in src/services/airtable.ts stays unchanged.
+export const DEKORAPOL_TABLE_ID = 'tblPB92hzMcxH1Ewc';
+
 const REGULAR_TABLE_SET = new Set(REGULAR_TABLE_IDS);
 
 // Airtable's own record IDs are always 17 characters, but the consolidated
