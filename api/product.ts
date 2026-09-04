@@ -1,6 +1,7 @@
 import type { VercelRequest, VercelResponse } from './_lib/types.js';
 import {
   airtableGet,
+  DEKORAPOL_TABLE_ID,
   escapeFormulaValue,
   FRONT_TABLE_ID,
   getAirtableConfig,
@@ -112,8 +113,16 @@ async function fetchProduct(
   const frontByIdField: Probe = {
     run: () => fetchByIdField(recordId, frontBaseId, FRONT_TABLE_ID, token),
   };
-  // Every other front table (stylfront, carlack, dekorapol, wiech, slawpol,
-  // brw, legacy frontpol) keeps its native record ID — one base-wide get.
+  // Dekorapol is synced from the pricing base, so like the consolidated tables
+  // its records carry fresh IDs and must be matched on {id}. It has to run
+  // BEFORE the base-wide get below: the pre-sync table still sits in the same
+  // base under the original record IDs, so a base-wide get would resolve an old
+  // QR code to the stale pre-sync row instead of the synced one.
+  const dekorapolByIdField: Probe = {
+    run: () => fetchByIdField(recordId, frontBaseId, DEKORAPOL_TABLE_ID, token),
+  };
+  // Every other front table (stylfront, carlack, wiech, slawpol, brw, legacy
+  // frontpol) keeps its native record ID — one base-wide get.
   const frontByRecordId: Probe = {
     run: () => fetchByRecordId(recordId, frontBaseId, FRONT_TABLE_ID, token),
   };
@@ -142,8 +151,8 @@ async function fetchProduct(
   // treated as an ordering hint, never as a filter.
   const probes: Probe[] =
     productType === 'front'
-      ? [frontByIdField, frontByRecordId, juanByIdField, legacyBoards]
-      : [juanByIdField, frontByIdField, legacyBoards, frontByRecordId];
+      ? [frontByIdField, dekorapolByIdField, frontByRecordId, juanByIdField, legacyBoards]
+      : [juanByIdField, frontByIdField, dekorapolByIdField, legacyBoards, frontByRecordId];
 
   for (const probe of probes) {
     const record = await probe.run();
