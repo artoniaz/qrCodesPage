@@ -1,0 +1,44 @@
+.scroll-cue {
+  position: fixed;
+  left: 50%;
+  /* Nigdy pod paskiem z ceną — zmienną ustawia kalkulator blatów, na
+     pozostałych widokach jest niezdefiniowana i wchodzi wartość zapasowa. */
+  bottom: calc(var(--azm-bottom-bar, 0px) + 1rem);
+  transform: translateX(-50%);
+  z-index: 11;
+  display: flex;
+  /* Czerwień jest zarezerwowana dla cen, a szewron pojawia się dokładnie nad
+     czerwonym paskiem — dwa akcenty obok siebie zabiłyby hierarchię. */
+  color: var(--azm-ink);
+  pointer-events: none;
+  /* Płaska plama w kolorze tła odcina szewron od tekstu, nad którym przepływa.
+     Bez cienia i bez zaokrągleń — brandbook dopuszcza tylko płaskie kolory. */
+  background: var(--azm-sand);
+  padding: 4px 12px;
+  animation: scroll-cue-drop 1.8s ease-in-out infinite;
+}
+
+.scroll-cue svg {
+  display: block;
+  width: 44px;
+  height: 22px;
+}
+
+@keyframes scroll-cue-drop {
+  0%,
+  100% {
+    transform: translate(-50%, 0);
+    opacity: 0.35;
+  }
+  50% {
+    transform: translate(-50%, 6px);
+    opacity: 0.85;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .scroll-cue {
+    animation: none;
+    opacity: 0.6;
+  }
+}

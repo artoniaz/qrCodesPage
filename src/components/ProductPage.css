@@ -12,7 +12,11 @@
   display: flex;
   justify-content: flex-start;
   align-items: flex-start;
-  padding: 25px 25px 100px 25px;
+  /* Dolny zapas mieści przypięty pasek z ceną. Zmienną ustawia kalkulator
+     blatów; na pozostałych widokach jest niezdefiniowana i zostaje sam
+     zwykły odstęp strony. */
+  padding: var(--pad-page);
+  padding-bottom: calc(var(--pad-page) + var(--azm-bottom-bar, 0px) + 2rem);
   box-sizing: border-box;
 }
 
@@ -82,7 +86,7 @@
 
 .loader-container p {
   color: var(--azm-grey);
-  font-size: 1.1rem;
+  font-size: var(--fs-body);
   margin: 0;
   font-weight: 500;
   letter-spacing: 0.3px;
@@ -98,11 +102,13 @@
 
 .error-container h2 {
   color: var(--azm-red);
+  font-size: var(--fs-section);
   margin-top: 0;
 }
 
 .error-container p {
   color: var(--azm-grey);
+  font-size: var(--fs-body);
 }
 
 .product-container {
@@ -118,8 +124,8 @@
 
 .product-title {
   color: var(--azm-ink);
-  margin: 0 0 0.75rem 0;
-  font-size: 2rem;
+  margin: 0 0 var(--gap-row) 0;
+  font-size: var(--fs-title);
   font-weight: 700;
   text-transform: uppercase;
   letter-spacing: -0.01em;
@@ -130,30 +136,33 @@
 .product-info {
   display: flex;
   flex-direction: column;
-  gap: 0.5rem;
-  margin-bottom: 1rem;
+  /* Ciaśniej niż --gap-col: przy powiększonym tekście te trzy sekcje same
+     w sobie tworzą wyraźne bloki, a każdy zbędny odstęp spycha cenę
+     poniżej zagięcia ekranu. */
+  gap: var(--gap-row);
+  margin-bottom: var(--gap-col);
 }
 
 .info-section {
   display: flex;
   flex-direction: column;
-  gap: 0.25rem;
+  gap: 0.1rem;
 }
 
 .info-section.description {
-  margin-top: 0.5rem;
+  margin-top: 0.25rem;
 }
 
 .info-label {
   color: var(--azm-grey);
-  font-size: 0.875rem;
+  font-size: var(--fs-label);
   font-weight: 400;
   text-align: left;
 }
 
 .info-value {
   color: var(--azm-ink);
-  font-size: 1.5rem;
+  font-size: var(--fs-lead);
   font-weight: 700;
   line-height: 1.2;
   text-align: left;
@@ -161,20 +170,20 @@
 
 .info-section.description .info-value {
   color: var(--azm-grey);
-  font-size: 0.95rem;
+  font-size: var(--fs-body);
   font-weight: 400;
   line-height: 1.4;
 }
 
 .variants-section {
-  margin-top: 1rem;
+  margin-top: var(--gap-col);
   border-top: none;
   padding-top: 0.5rem;
 }
 
 .variants-title {
   color: var(--azm-ink);
-  font-size: 1.125rem;
+  font-size: var(--fs-section);
   font-weight: 600;
   margin: 0 0 1rem 0;
 }
@@ -199,37 +208,59 @@
 
 .variant-title {
   color: var(--azm-ink);
-  font-size: 0.875rem;
+  font-size: var(--fs-label);
   font-weight: 600;
   text-align: left;
   display: block;
   width: 100%;
 }
 
+/* ---------------------------------------------------------------------------
+   Wiersze etykieta/wartość.
+
+   Siatka żyje na kontenerze, a same wiersze są `display: contents`, więc
+   wszystkie etykiety trafiają do jednej kolumny o szerokości `max-content`.
+   Dzięki temu kolumna dopasowuje się do najdłuższej etykiety zamiast być
+   zapisana na sztywno w pikselach — przy poprzednich 110/140/175 px
+   "Forma sprzedaży:" i "Dostępne szerokości:" łamały się na dwie linie, a po
+   powiększeniu tekstu łamałyby się jeszcze częściej.
+--------------------------------------------------------------------------- */
+.worktop-basic-info,
 .variant-details {
-  display: flex;
-  flex-direction: column;
-  gap: 0.25rem;
+  display: grid;
+  grid-template-columns: max-content 1fr;
+  column-gap: var(--gap-col);
+  row-gap: var(--gap-row);
+  align-items: baseline;
 }
 
-.variant-row {
-  display: grid;
-  grid-template-columns: 140px 1fr;
-  align-items: baseline;
-  gap: 0.5rem;
+.worktop-basic-info .info-row,
+.variant-details .variant-row {
+  display: contents;
+}
+
+/* Nagłówek grupy i tabela cen są bezpośrednimi dziećmi siatki — muszą zająć
+   obie kolumny, inaczej wpadłyby do kolumny etykiet. */
+.worktop-basic-info > *:not(.info-row) {
+  grid-column: 1 / -1;
+}
+
+.worktop-basic-info {
+  margin-top: 0.5rem;
+  padding: var(--gap-col) 0;
+  border-bottom: var(--azm-stroke) solid var(--azm-line);
 }
 
 .variant-label {
   color: var(--azm-grey);
-  font-size: 1rem;
+  font-size: var(--fs-label);
   font-weight: 400;
-  flex-shrink: 0;
   text-align: left;
 }
 
 .variant-value {
   color: var(--azm-ink);
-  font-size: 1rem;
+  font-size: var(--fs-body);
   font-weight: 400;
   text-align: left;
   word-break: break-word;
@@ -239,37 +270,19 @@
 .variant-value.price {
   color: var(--azm-red);
   font-weight: 700;
-  font-size: 1.125rem;
-}
-
-.worktop-basic-info {
-  display: flex;
-  flex-direction: column;
-  gap: 0.5rem;
-  margin-top: 0.5rem;
-  padding: 0.75rem 0;
-  border-bottom: var(--azm-stroke) solid var(--azm-line);
-}
-
-.worktop-basic-info .info-row {
-  display: grid;
-  /* Montserrat jest szerszy od poprzedniego system-ui — "Dostępne szerokości:"
-     nie mieści się już w 140 px i łamie się na dwie linie. */
-  grid-template-columns: 175px 1fr;
-  align-items: baseline;
-  gap: 0.5rem;
+  font-size: var(--fs-price);
 }
 
 .worktop-basic-info .info-label {
   color: var(--azm-grey);
-  font-size: 0.875rem;
+  font-size: var(--fs-label);
   font-weight: 400;
   text-align: left;
 }
 
 .info-value-simple {
   color: var(--azm-ink);
-  font-size: 0.875rem;
+  font-size: var(--fs-body);
   font-weight: 400;
   text-align: left;
 }
@@ -277,12 +290,12 @@
 .info-value-accent {
   color: var(--azm-red);
   font-weight: 700;
-  font-size: 1rem;
+  font-size: var(--fs-price);
 }
 
 .front-header {
   color: var(--azm-ink);
-  font-size: 2rem;
+  font-size: var(--fs-title);
   font-weight: 700;
   text-align: left;
 }
@@ -302,18 +315,13 @@
 .info-group-title {
   margin: 0 0 0.35rem;
   color: var(--azm-ink);
-  font-size: 1rem;
+  font-size: var(--fs-section);
   font-weight: 700;
   text-align: left;
 }
 
 .front-info:has(.info-group-title) {
-  padding-top: 0.75rem;
-}
-
-/* "Forma sprzedaży:" is wider than any label the other views use. */
-.sheet-front-group .info-row {
-  grid-template-columns: 155px 1fr;
+  padding-top: var(--gap-col);
 }
 
 .sheet-info {
@@ -335,7 +343,7 @@
 
 .engraving-price-table th,
 .engraving-price-table td {
-  padding: 0.75rem 1rem;
+  padding: var(--gap-row) var(--gap-col);
   text-align: left;
   border-bottom: var(--azm-stroke) solid var(--azm-line);
 }
@@ -347,14 +355,14 @@
 .engraving-price-table th {
   font-weight: 600;
   color: var(--azm-ink);
-  font-size: 0.875rem;
+  font-size: var(--fs-label);
 }
 
 /* Komórki z cenami — jedyny akcent w tabeli. */
 .engraving-price-table td {
   color: var(--azm-red);
   font-weight: 700;
-  font-size: 0.875rem;
+  font-size: var(--fs-price);
 }
 
 .engraving-price-table tbody tr:last-child td {
@@ -369,9 +377,19 @@
 .engraving-price-table td:first-child {
   color: var(--azm-ink);
   font-weight: 600;
+  font-size: var(--fs-body);
 }
 
-@media (max-width: 768px) {
+/* ---------------------------------------------------------------------------
+   Wąskie ekrany.
+
+   Poprzednia wersja miała tu próg 768 px, który ZMNIEJSZAŁ tekst — reguły
+   pisane pod telefon w dłoni. Kiosk na tablecie w to wpadał i dostawał
+   etykiety po 12 px, mimo że klient patrzy na ekran z ok. metra. Skala jest
+   teraz płynna (clamp w :root), więc nadpisywanie rozmiarów jest zbędne;
+   zostaje wyłącznie zmiana układu na naprawdę wąskich ekranach.
+--------------------------------------------------------------------------- */
+@media (max-width: 520px) {
   .product-page {
     min-height: 100vh;
     height: auto;
@@ -380,96 +398,20 @@
     -webkit-overflow-scrolling: touch;
   }
 
-  .product-body {
-    padding: 0;
-  }
-
-  .product-container {
-    padding: 15px;
-    padding-bottom: 50px;
-    height: auto;
-    max-height: none;
-    min-height: 100%;
-  }
-
-  .product-title {
-    font-size: 1.5rem;
-    margin-bottom: 0.5rem;
-  }
-
-  .product-info {
-    gap: 0.35rem;
-    margin-bottom: 0.75rem;
-  }
-
-  .info-value {
-    font-size: 1.7rem;
-  }
-
-  .info-section.description .info-value {
-    font-size: 0.8rem;
-  }
-
-  .variants-section {
-    margin-top: 0.5rem;
-    padding-top: 0.25rem;
-  }
-
-  .variants-title {
-    font-size: 1rem;
-    margin-bottom: 0.5rem;
-  }
-
-  .variant-card {
-    margin-bottom: 0.75rem;
-    padding-bottom: 0.25rem;
-  }
-
-  .variant-header {
-    margin-bottom: 0.35rem;
-  }
-
-  .variant-title {
-    font-size: 0.75rem;
-  }
-
+  /* Etykieta nad wartością — przy tej szerokości kolumna etykiet zjadałaby
+     zbyt dużo miejsca na wartość. */
+  .worktop-basic-info,
   .variant-details {
-    gap: 0.2rem;
+    grid-template-columns: 1fr;
+    row-gap: 0.2rem;
   }
 
-  .variant-row {
-    gap: 0.5rem;
-    grid-template-columns: 110px 1fr;
-  }
-
-  .variant-label,
-  .variant-value {
-    font-size: 0.75rem;
-  }
-
-  .variant-value.price {
-    font-size: 0.8rem;
-  }
-
-  .variant-value {
-    text-align: left;
-  }
-
-  .info-value-accent {
-    font-size: 0.875rem;
-  }
-
-  .info-group-title {
-    font-size: 0.9rem;
+  .worktop-basic-info .info-row + .info-row .info-label,
+  .variant-details .variant-row + .variant-row .variant-label {
+    margin-top: var(--gap-row);
   }
 
   .engraving-price-table {
     overflow-x: auto;
-  }
-
-  .engraving-price-table th,
-  .engraving-price-table td {
-    padding: 0.5rem 0.75rem;
-    font-size: 0.75rem;
   }
 }

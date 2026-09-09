@@ -20,6 +20,28 @@
   --azm-logo-aspect: 4.752;
   --azm-logo-clear: 0.543;
 
+  /* ---------------------------------------------------------------------
+     Skala typograficzna kiosku.
+     Klient stoi przed tabletem, a nie trzyma go w dłoni — krok bazowy jest
+     więc wyraźnie większy niż w typowej aplikacji webowej. Wartości podane
+     poniżej to rozmiar przy szerokości 768 px (typowy tablet w pionie);
+     płynna część skaluje je w zakresie ok. 600-1400 px.
+
+     Część rem w każdym clamp() jest celowa — sam vw psułby powiększanie
+     czcionki w ustawieniach systemu.
+     --------------------------------------------------------------------- */
+  --fs-label: clamp(0.95rem, 0.73rem + 0.7vw, 1.3rem);    /* etykiety   ~17px */
+  --fs-body: clamp(1.05rem, 0.83rem + 0.75vw, 1.45rem);   /* wartości   ~19px */
+  --fs-section: clamp(1.2rem, 0.97rem + 0.85vw, 1.65rem); /* nagłówki   ~22px */
+  --fs-lead: clamp(1.4rem, 1.15rem + 1vw, 1.95rem);       /* wyróżnione ~26px */
+  --fs-price: clamp(1.6rem, 1.32rem + 1.15vw, 2.25rem);   /* ceny       ~30px */
+  --fs-title: clamp(2rem, 1.75rem + 1.6vw, 3rem);         /* tytuł      ~40px */
+
+  /* Odstępy rosną razem z tekstem, żeby układ nie robił się ciasny. */
+  --gap-row: clamp(0.5rem, 1.2vw, 0.9rem);
+  --gap-col: clamp(1rem, 2.5vw, 2rem);
+  --pad-page: clamp(1rem, 3vw, 2rem);
+
   font-family: "Montserrat Variable", Montserrat, system-ui, sans-serif;
   font-weight: 400;
   line-height: 1.5;

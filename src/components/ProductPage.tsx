@@ -4,6 +4,7 @@ import { fetchProduct, type ProductWithVariants } from "../services/airtable";
 import type { ProductKind } from "../types/product";
 import WorktopCalculator from "./WorktopCalculator";
 import BrandHeader from "./BrandHeader";
+import ScrollCue from "./ScrollCue";
 import "./ProductPage.css";
 
 // Strona ma cztery punkty wyjścia (ładowanie, błąd, brak produktu, dane).
@@ -13,6 +14,7 @@ function ProductShell({ children }: { children: React.ReactNode }) {
     <div className="product-page">
       <BrandHeader />
       <div className="product-body">{children}</div>
+      <ScrollCue />
     </div>
   );
 }

@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useLayoutEffect, useRef } from "react";
 import type { Product } from "../types/product";
 import "./WorktopCalculator.css";
 
@@ -165,6 +165,33 @@ export default function WorktopCalculator({ product: initialProduct, thicknessVa
   };
 
   const price = calculatePrice();
+  const hasPrice = price !== null;
+
+  // Pasek z ceną jest przypięty do dołu ekranu (position: fixed), więc nie
+  // zajmuje miejsca w układzie. Strona musi je zarezerwować, inaczej pasek
+  // przykryłby ostatni rząd chipów. Wysokość jest MIERZONA, nie liczona ze
+  // zmiennych: skala typograficzna jest płynna (clamp), więc każdy wzór na
+  // calc() rozjechałby się przy pierwszej zmianie szerokości ekranu.
+  const priceBarRef = useRef<HTMLDivElement>(null);
+
+  useLayoutEffect(() => {
+    const root = document.documentElement;
+    const bar = priceBarRef.current;
+    if (!bar) return;
+
+    const apply = () => {
+      root.style.setProperty("--azm-bottom-bar", `${bar.offsetHeight}px`);
+    };
+    apply();
+
+    const observer = new ResizeObserver(apply);
+    observer.observe(bar);
+    return () => {
+      observer.disconnect();
+      // Bez tego rezerwacja zostałaby po przejściu na produkt bez kalkulatora.
+      root.style.removeProperty("--azm-bottom-bar");
+    };
+  }, [hasPrice]);
 
   const getSideLabel = (side: 1 | 2) => {
     return side === 1 ? "jednostronnie zaoblony" : "obustronnie zaoblony";
@@ -268,7 +295,7 @@ export default function WorktopCalculator({ product: initialProduct, thicknessVa
 
       {/* Price display */}
       {price && (
-        <div className="price-display">
+        <div className="price-display" ref={priceBarRef}>
           <div className="price-card">
             <div className="price-details">
               <div className="price-row">
