@@ -2,15 +2,18 @@
   min-height: 100vh;
   width: 100%;
   display: flex;
+  flex-direction: column;
+  /* Tło i akcent geometryczny dziedziczone z body. */
+  overflow-y: auto;
+}
+
+.product-body {
+  flex: 1;
+  display: flex;
   justify-content: flex-start;
   align-items: flex-start;
   padding: 25px 25px 100px 25px;
-  background-image: linear-gradient(rgba(255, 255, 255, 0.5), rgba(255, 255, 255, 0.5)), url('../assets/soft-grey-organic-leaves-background-with-text-space_1017-60373.jpg');
-  background-size: cover;
-  background-position: center;
-  background-repeat: no-repeat;
-  background-attachment: fixed;
-  overflow-y: auto;
+  box-sizing: border-box;
 }
 
 .loader-container {
@@ -37,6 +40,7 @@
 .loader::after {
   content: '';
   position: absolute;
+  /* Jedyne dopuszczone koło poza sygnetem — element funkcjonalny, nie dekoracja. */
   border-radius: 50%;
   animation: pulse 2s ease-in-out infinite;
 }
@@ -44,16 +48,15 @@
 .loader::before {
   width: 60px;
   height: 60px;
-  border: 3px solid #667eea;
-  box-shadow: 0 0 20px rgba(102, 126, 234, 0.3);
+  border: 3px solid var(--azm-sand);
 }
 
 .loader::after {
   width: 60px;
   height: 60px;
   border: 3px solid transparent;
-  border-top-color: #764ba2;
-  border-right-color: #764ba2;
+  border-top-color: var(--azm-red);
+  border-right-color: var(--azm-red);
   animation: spin 1.5s cubic-bezier(0.68, -0.55, 0.265, 1.55) infinite;
 }
 
@@ -78,7 +81,7 @@
 }
 
 .loader-container p {
-  color: #444;
+  color: var(--azm-grey);
   font-size: 1.1rem;
   margin: 0;
   font-weight: 500;
@@ -86,20 +89,20 @@
 }
 
 .error-container {
-  background: white;
+  background: var(--azm-white);
   padding: 2rem;
-  border-radius: 12px;
-  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+  border: var(--azm-stroke) solid var(--azm-line);
+  border-radius: var(--azm-radius);
   text-align: center;
 }
 
 .error-container h2 {
-  color: #e53e3e;
+  color: var(--azm-red);
   margin-top: 0;
 }
 
 .error-container p {
-  color: #333;
+  color: var(--azm-grey);
 }
 
 .product-container {
@@ -114,7 +117,7 @@
 }
 
 .product-title {
-  color: #000;
+  color: var(--azm-ink);
   margin: 0 0 0.75rem 0;
   font-size: 2rem;
   font-weight: 700;
@@ -142,14 +145,14 @@
 }
 
 .info-label {
-  color: #444;
+  color: var(--azm-grey);
   font-size: 0.875rem;
   font-weight: 400;
   text-align: left;
 }
 
 .info-value {
-  color: #000;
+  color: var(--azm-ink);
   font-size: 1.5rem;
   font-weight: 700;
   line-height: 1.2;
@@ -157,7 +160,7 @@
 }
 
 .info-section.description .info-value {
-  color: #444;
+  color: var(--azm-grey);
   font-size: 0.95rem;
   font-weight: 400;
   line-height: 1.4;
@@ -170,7 +173,7 @@
 }
 
 .variants-title {
-  color: #000;
+  color: var(--azm-ink);
   font-size: 1.125rem;
   font-weight: 600;
   margin: 0 0 1rem 0;
@@ -195,7 +198,7 @@
 }
 
 .variant-title {
-  color: #000;
+  color: var(--azm-ink);
   font-size: 0.875rem;
   font-weight: 600;
   text-align: left;
@@ -217,7 +220,7 @@
 }
 
 .variant-label {
-  color: #444;
+  color: var(--azm-grey);
   font-size: 1rem;
   font-weight: 400;
   flex-shrink: 0;
@@ -225,14 +228,16 @@
 }
 
 .variant-value {
-  color: #000;
+  color: var(--azm-ink);
   font-size: 1rem;
   font-weight: 400;
   text-align: left;
   word-break: break-word;
 }
 
+/* Czerwień niesie na tej stronie wyłącznie cena — rzadki, celowy akcent. */
 .variant-value.price {
+  color: var(--azm-red);
   font-weight: 700;
   font-size: 1.125rem;
 }
@@ -243,32 +248,40 @@
   gap: 0.5rem;
   margin-top: 0.5rem;
   padding: 0.75rem 0;
-  border-bottom: 1px solid rgba(0, 0, 0, 0.1);
+  border-bottom: var(--azm-stroke) solid var(--azm-line);
 }
 
 .worktop-basic-info .info-row {
   display: grid;
-  grid-template-columns: 140px 1fr;
+  /* Montserrat jest szerszy od poprzedniego system-ui — "Dostępne szerokości:"
+     nie mieści się już w 140 px i łamie się na dwie linie. */
+  grid-template-columns: 175px 1fr;
   align-items: baseline;
   gap: 0.5rem;
 }
 
 .worktop-basic-info .info-label {
-  color: #444;
+  color: var(--azm-grey);
   font-size: 0.875rem;
   font-weight: 400;
   text-align: left;
 }
 
 .info-value-simple {
-  color: #000;
+  color: var(--azm-ink);
   font-size: 0.875rem;
   font-weight: 400;
   text-align: left;
 }
 
+.info-value-accent {
+  color: var(--azm-red);
+  font-weight: 700;
+  font-size: 1rem;
+}
+
 .front-header {
-  color: #000;
+  color: var(--azm-ink);
   font-size: 2rem;
   font-weight: 700;
   text-align: left;
@@ -288,7 +301,7 @@
    label, where only the second block carries a bold heading. */
 .info-group-title {
   margin: 0 0 0.35rem;
-  color: #000;
+  color: var(--azm-ink);
   font-size: 1rem;
   font-weight: 700;
   text-align: left;
@@ -315,30 +328,32 @@
 .engraving-price-table table {
   width: 100%;
   border-collapse: collapse;
-  background: rgba(255, 255, 255, 0.5);
-  border-radius: 8px;
-  overflow: hidden;
+  background: var(--azm-white);
+  border: var(--azm-stroke) solid var(--azm-line);
+  border-radius: var(--azm-radius);
 }
 
 .engraving-price-table th,
 .engraving-price-table td {
   padding: 0.75rem 1rem;
   text-align: left;
-  border-bottom: 1px solid rgba(0, 0, 0, 0.1);
+  border-bottom: var(--azm-stroke) solid var(--azm-line);
 }
 
 .engraving-price-table thead {
-  background: rgba(0, 0, 0, 0.05);
+  background: var(--azm-sand);
 }
 
 .engraving-price-table th {
   font-weight: 600;
-  color: #000;
+  color: var(--azm-ink);
   font-size: 0.875rem;
 }
 
+/* Komórki z cenami — jedyny akcent w tabeli. */
 .engraving-price-table td {
-  color: #000;
+  color: var(--azm-red);
+  font-weight: 700;
   font-size: 0.875rem;
 }
 
@@ -346,20 +361,27 @@
   border-bottom: none;
 }
 
-.engraving-price-table td:first-child,
 .engraving-price-table th:first-child {
+  font-weight: 600;
+}
+
+/* Etykieta wiersza nie jest ceną — zostaje neutralna. */
+.engraving-price-table td:first-child {
+  color: var(--azm-ink);
   font-weight: 600;
 }
 
 @media (max-width: 768px) {
   .product-page {
-    padding: 0;
     min-height: 100vh;
     height: auto;
     overflow-y: auto;
     overflow-x: hidden;
     -webkit-overflow-scrolling: touch;
-    background-attachment: scroll;
+  }
+
+  .product-body {
+    padding: 0;
   }
 
   .product-container {
@@ -431,6 +453,10 @@
 
   .variant-value {
     text-align: left;
+  }
+
+  .info-value-accent {
+    font-size: 0.875rem;
   }
 
   .info-group-title {

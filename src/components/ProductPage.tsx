@@ -3,7 +3,19 @@ import { useParams, useLocation } from "react-router-dom";
 import { fetchProduct, type ProductWithVariants } from "../services/airtable";
 import type { ProductKind } from "../types/product";
 import WorktopCalculator from "./WorktopCalculator";
+import BrandHeader from "./BrandHeader";
 import "./ProductPage.css";
+
+// Strona ma cztery punkty wyjścia (ładowanie, błąd, brak produktu, dane).
+// Powłoka trzyma nagłówek marki w jednym miejscu dla wszystkich czterech.
+function ProductShell({ children }: { children: React.ReactNode }) {
+  return (
+    <div className="product-page">
+      <BrandHeader />
+      <div className="product-body">{children}</div>
+    </div>
+  );
+}
 
 const PRICE_HIDDEN_NOTICE = "zmiana cennika, tymczasowo proszę pytać obsługę";
 
@@ -24,15 +36,21 @@ function formatPrice(value: number, unit: string): string {
 function InfoRow({
   label,
   value,
+  accent = false,
 }: {
   label: string;
   value?: string | number | null;
+  // Czerwień jest w brandbooku akcentem rzadkim i celowym — na tej stronie
+  // niesie ją wyłącznie cena.
+  accent?: boolean;
 }) {
   if (value === undefined || value === null || value === "") return null;
   return (
     <div className="info-row">
       <span className="info-label">{label}:</span>
-      <span className="info-value-simple">{value}</span>
+      <span className={`info-value-simple${accent ? " info-value-accent" : ""}`}>
+        {value}
+      </span>
     </div>
   );
 }
@@ -83,32 +101,32 @@ export default function ProductPage() {
 
   if (loading) {
     return (
-      <div className="product-page">
+      <ProductShell>
         <div className="loader-container">
           <div className="loader"></div>
         </div>
-      </div>
+      </ProductShell>
     );
   }
 
   if (error) {
     return (
-      <div className="product-page">
+      <ProductShell>
         <div className="error-container">
-          <h2>Error</h2>
+          <h2>Wystąpił błąd</h2>
           <p>{error}</p>
         </div>
-      </div>
+      </ProductShell>
     );
   }
 
   if (!productData) {
     return (
-      <div className="product-page">
+      <ProductShell>
         <div className="error-container">
-          <h2>Product not found</h2>
+          <h2>Nie znaleziono produktu</h2>
         </div>
-      </div>
+      </ProductShell>
     );
   }
 
@@ -152,7 +170,7 @@ export default function ProductPage() {
   const hasProductInfo = product.decor || product.structure || product.category || product.description;
 
   return (
-    <div className="product-page">
+    <ProductShell>
       <div className="product-container">
         <h1 className="product-title">{title}</h1>
 
@@ -323,6 +341,7 @@ export default function ProductPage() {
             ) : product.cena_brutto !== undefined ? (
               <InfoRow
                 label="Cena"
+                accent
                 value={formatPrice(product.cena_brutto, "m²")}
               />
             ) : null}
@@ -353,6 +372,7 @@ export default function ProductPage() {
             ) : product.cena_brutto_arkusz !== undefined ? (
               <InfoRow
                 label="Cena"
+                accent
                 value={formatPrice(product.cena_brutto_arkusz, "szt.")}
               />
             ) : null}
@@ -371,6 +391,7 @@ export default function ProductPage() {
             ) : product.cena_brutto !== undefined ? (
               <InfoRow
                 label="Cena"
+                accent
                 value={formatPrice(product.cena_brutto, "m²")}
               />
             ) : null}
@@ -445,6 +466,6 @@ export default function ProductPage() {
           </div>
         )}
       </div>
-    </div>
+    </ProductShell>
   );
 }

@@ -1,0 +1,20 @@
+.brand-header {
+  /* Szerokość powyżej brandbookowego minimum 180 px dla wersji z hasłem. */
+  --logo-w: clamp(200px, 22vw, 260px);
+  /* Pole ochronne = wysokość monogramu = szer. / aspect * 0,543. */
+  --clear: calc(var(--logo-w) / var(--azm-logo-aspect) * var(--azm-logo-clear));
+
+  display: flex;
+  align-items: center;
+  width: 100%;
+  box-sizing: border-box;
+  padding: var(--clear) max(25px, var(--clear));
+  /* Linia leży na krawędzi nagłówka, poza polem ochronnym logo. */
+  border-bottom: var(--azm-stroke) solid var(--azm-red);
+}
+
+.brand-header-logo {
+  width: var(--logo-w);
+  height: auto;
+  display: block;
+}

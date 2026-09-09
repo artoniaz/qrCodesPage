@@ -1,32 +1,40 @@
-import logo from "../assets/Logo-05.png";
+import logo from "../assets/logo-poziome.png";
 import "./HomePage.css";
 
 export default function HomePage() {
   return (
     <div className="home">
       <div className="home-card">
-        <img className="home-logo" src={logo} alt="AZ MEBLOPŁYT" />
+        {/* Wersja pozioma dodatkowa zawiera już hasło "akcesoria i płyty
+            meblowe" — nie powtarzamy go pod logotypem. */}
+        <img
+          className="home-logo"
+          src={logo}
+          alt="azMEBLOPŁYT — akcesoria i płyty meblowe"
+        />
 
         <h1 className="home-greeting">Witamy</h1>
-        <p className="home-sub">akcesoria i płyty meblowe</p>
+
+        <span className="home-rule" aria-hidden="true" />
 
         <div className="scan" aria-hidden="true">
+          {/* Jednolita grubość linii i ostre kąty — bez zaokrągleń i wypełnień,
+              zgodnie z zasadami dla ikon w brandbooku. */}
           <svg
             className="scan-icon"
             viewBox="0 0 64 64"
             fill="none"
+            stroke="currentColor"
+            strokeWidth="3"
+            strokeLinecap="butt"
+            strokeLinejoin="miter"
             xmlns="http://www.w3.org/2000/svg"
           >
-            <path
-              d="M6 22V10a4 4 0 0 1 4-4h12M42 6h12a4 4 0 0 1 4 4v12M58 42v12a4 4 0 0 1-4 4H42M22 58H10a4 4 0 0 1-4-4V42"
-              stroke="currentColor"
-              strokeWidth="3.5"
-              strokeLinecap="round"
-            />
-            <rect x="18" y="18" width="11" height="11" rx="1.5" fill="currentColor" />
-            <rect x="35" y="18" width="11" height="11" rx="1.5" fill="currentColor" />
-            <rect x="18" y="35" width="11" height="11" rx="1.5" fill="currentColor" />
-            <rect x="38" y="38" width="8" height="8" rx="1.5" fill="currentColor" />
+            <path d="M5 23V5h18M41 5h18v18M59 41v18H41M23 59H5V41" />
+            <rect x="17" y="17" width="12" height="12" />
+            <rect x="35" y="17" width="12" height="12" />
+            <rect x="17" y="35" width="12" height="12" />
+            <rect x="37" y="37" width="8" height="8" />
           </svg>
           <span className="scan-line" />
         </div>

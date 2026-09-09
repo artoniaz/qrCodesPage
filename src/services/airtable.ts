@@ -17,6 +17,11 @@ const TABLE_ID_SET = new Set(TABLE_IDS);
 // consolidated tables' hand-maintained {id} field — see api/_lib/airtable.ts.
 const RECORD_ID_RE = /^rec[A-Za-z0-9]{14,21}$/;
 
+// Ekran kiosku ogląda klient w hali sprzedaży, nie programista — komunikaty
+// techniczne trafiają do konsoli, na ekran idzie jedno zdanie po polsku.
+const SCAN_AGAIN_NOTICE =
+  'Nie udało się wczytać produktu. Zeskanuj kod ponownie lub poproś o pomoc obsługę.';
+
 export interface ProductWithVariants {
   product: Product;
   thicknessVariants?: Product[];
@@ -75,7 +80,8 @@ export async function fetchProduct(
   tableIdHint?: string,
 ): Promise<ProductWithVariants> {
   if (!RECORD_ID_RE.test(recordId)) {
-    throw new Error(`Invalid product id: ${recordId}`);
+    console.error(`Invalid product id: ${recordId}`);
+    throw new Error(SCAN_AGAIN_NOTICE);
   }
 
   // Only forward a table hint that we recognize. The server validates the
@@ -92,18 +98,20 @@ export async function fetchProduct(
 
   const response = await fetch(`/api/product?${params.toString()}`);
   if (!response.ok) {
-    // Surface the server's error message when it's a 4xx; treat 5xx as
-    // generic to avoid leaking internals.
-    let message = `Product ${recordId} not found`;
+    // The customer sees a Polish, non-technical notice; the server's own
+    // message is English and technical, so it goes to the console instead of
+    // onto the kiosk screen.
+    let detail = `Product ${recordId} not found (HTTP ${response.status})`;
     if (response.status >= 400 && response.status < 500) {
       try {
         const body = (await response.json()) as { error?: string };
-        if (body?.error) message = body.error;
+        if (body?.error) detail = body.error;
       } catch {
-        // ignore parse failure, fall back to default message
+        // ignore parse failure, keep the default detail
       }
     }
-    throw new Error(message);
+    console.error(detail);
+    throw new Error(SCAN_AGAIN_NOTICE);
   }
 
   const data = (await response.json()) as ProductWithVariants;
