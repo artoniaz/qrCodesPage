@@ -61,6 +61,32 @@
   background: var(--azm-sand);
 }
 
+/* A thickness Airtable has not finished describing. It stays on the list — the
+   sample the customer scanned may be exactly this one — but it can't be picked,
+   because there is no price behind it. Two class selectors so the muted look
+   also wins over .chip-active: when nothing can be priced, the scanned
+   thickness stays selected and must not look clickable. */
+.chip.chip-unavailable,
+.chip.chip-unavailable:hover {
+  background: var(--azm-sand);
+  border-color: var(--azm-line);
+  color: var(--azm-grey);
+  cursor: default;
+  /* The "niedostępne" note sits under the value, so this chip is two lines. */
+  white-space: normal;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 0.15em;
+}
+
+.chip-note {
+  font-size: var(--fs-label);
+  font-weight: 400;
+  line-height: 1.1;
+}
+
 .chip-active {
   border-color: var(--azm-red);
   background: var(--azm-red);
@@ -70,6 +96,18 @@
 .chip-active:hover {
   background: var(--azm-red);
   border-color: var(--azm-red);
+}
+
+/* Stands in for the price bar when nothing about the product can be priced.
+   Neutral border on purpose: in the brandbook red belongs to the price. */
+.calculator-notice {
+  margin: 0;
+  padding: var(--gap-col);
+  background: var(--azm-white);
+  border: var(--azm-stroke) solid var(--azm-line);
+  border-radius: var(--azm-radius);
+  font-size: var(--fs-body);
+  color: var(--azm-ink);
 }
 
 /* Pinned to the bottom of the screen: the price is the number the customer

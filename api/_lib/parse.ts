@@ -80,6 +80,9 @@ export interface Product {
   kolekcja?: string;
   qr_id?: string;
   is_new?: boolean;
+  // Worktops only. True when the record is missing a dimension the price
+  // calculator needs, so no price may be shown for it — see isUnpriceable.
+  unavailable?: boolean;
 }
 
 // 'blat'        → Juan / Kronospan worktop, rendered with the price calculator
@@ -107,19 +110,38 @@ function parsePrice(priceValue: unknown): number | undefined {
   return undefined;
 }
 
-function parseLength(lengthValue: unknown): { length_1?: number; length_2?: number } {
-  if (typeof lengthValue !== 'string') return {};
-  const lengths = lengthValue
+// Airtable spells "no data" for a dimension as 0 (or, in the legacy tables, as
+// a blank field). Zero is never a real millimetre value, so it is dropped here
+// rather than travelling on into the calculator — where a length of 0 would
+// quietly turn a per-metre rate into a finished price.
+function parseDimensions(value: unknown): number[] {
+  if (typeof value !== 'string') return [];
+  return value
     .split(';')
-    .map((l) => {
-      const parsed = parseInt(l.trim());
-      return isNaN(parsed) ? undefined : parsed;
-    })
-    .filter((l): l is number => l !== undefined);
+    .map((part) => parseInt(part.trim()))
+    .filter((n) => !isNaN(n) && n > 0);
+}
+
+// The semicolon-separated string the product page prints verbatim. Rebuilt from
+// the parsed values so a dropped 0 never shows up as an available "0mm".
+function formatDimensions(values: number[]): string | undefined {
+  return values.length > 0 ? values.join(';') : undefined;
+}
+
+// A worktop is priced as a per-metre rate multiplied by the chosen length, so a
+// row carrying no width or no length cannot be priced at all — any number shown
+// for it would be wrong rather than merely imprecise. Airtable holds such
+// half-filled rows (today the 18 mm POSTFORMING blaty, whose {dlugosci} is "0"),
+// and they are flagged here so the SPA can mark them unavailable instead.
+function isUnpriceable(widths: number[], lengths: number[]): boolean {
+  return widths.length === 0 || lengths.length === 0;
+}
+
+function numberedLengths(lengths: number[]): { length_1?: number; length_2?: number } {
   return { length_1: lengths[0], length_2: lengths[1] };
 }
 
-function parseWidth(widthValue: unknown): {
+function numberedWidths(widths: number[]): {
   width_1?: number;
   width_2?: number;
   width_3?: number;
@@ -129,14 +151,6 @@ function parseWidth(widthValue: unknown): {
   width_7?: number;
   width_8?: number;
 } {
-  if (typeof widthValue !== 'string') return {};
-  const widths = widthValue
-    .split(';')
-    .map((w) => {
-      const parsed = parseInt(w.trim());
-      return isNaN(parsed) ? undefined : parsed;
-    })
-    .filter((w): w is number => w !== undefined);
   return {
     width_1: widths[0],
     width_2: widths[1],
@@ -208,8 +222,10 @@ export function parseAirtableRecord(record: AirtableRecord): Product {
   const isNewJuanSchema = f.ceny_netto !== undefined || f.szerokosci !== undefined;
 
   if (isNewJuanSchema) {
-    const parsedLengths = parseLength(f.dlugosci);
-    const parsedWidths = parseWidth(f.szerokosci);
+    const lengthValues = parseDimensions(f.dlugosci);
+    const widthValues = parseDimensions(f.szerokosci);
+    const parsedLengths = numberedLengths(lengthValues);
+    const parsedWidths = numberedWidths(widthValues);
     const { side, sideKeys } = parseZaobleniaAndKeys(f.zaoblenia);
     const prices = parseCenyNetto(f.ceny_netto);
     // qr_id may carry a BOM-prefixed key from the CSV import.
@@ -233,7 +249,7 @@ export function parseAirtableRecord(record: AirtableRecord): Product {
           ? f.grubosc
           : parseInt(f.grubosc as string) || 0,
       typePrice: (f.typePrice as string) || '',
-      width: (f.szerokosci as string) || undefined,
+      width: formatDimensions(widthValues),
       width_1: parsedWidths.width_1,
       width_2: parsedWidths.width_2,
       width_3: parsedWidths.width_3,
@@ -248,10 +264,7 @@ export function parseAirtableRecord(record: AirtableRecord): Product {
       'url + code': (f['url + code'] as string) || '',
       producer: 'Juan',
       label: (f.label as string) || undefined,
-      length:
-        f.dlugosci !== undefined && f.dlugosci !== null
-          ? String(f.dlugosci)
-          : undefined,
+      length: formatDimensions(lengthValues),
       length_1: parsedLengths.length_1,
       length_2: parsedLengths.length_2,
       side,
@@ -261,6 +274,7 @@ export function parseAirtableRecord(record: AirtableRecord): Product {
       qr_id: qrId || undefined,
       is_new: f.is_new === true || f.is_new === 'checked',
       ukryj_cene: f.ukryj_cene === true,
+      unavailable: isUnpriceable(widthValues, lengthValues),
     };
   }
 
@@ -334,8 +348,10 @@ export function parseAirtableRecord(record: AirtableRecord): Product {
     };
   }
 
-  const parsedLengths = parseLength(f.length);
-  const parsedWidths = parseWidth(f.width);
+  const lengthValues = parseDimensions(f.length);
+  const widthValues = parseDimensions(f.width);
+  const parsedLengths = numberedLengths(lengthValues);
+  const parsedWidths = numberedWidths(widthValues);
   const category = (f.category as string) || '';
   const kind: ProductKind =
     category.toLowerCase() === 'blat'
@@ -357,7 +373,9 @@ export function parseAirtableRecord(record: AirtableRecord): Product {
     code: (f.code as string) || '',
     thickness: (f.thickness as number) || 0,
     typePrice: (f.typePrice as string) || '',
-    width: (f.width as string) || undefined,
+    // The board tables (Płyta) hold a single numeric width instead of a
+    // semicolon-separated list — passed through as-is, the way it always was.
+    width: typeof f.width === 'string' ? formatDimensions(widthValues) : asString(f.width),
     width_1: parsedWidths.width_1,
     width_2: parsedWidths.width_2,
     width_3: parsedWidths.width_3,
@@ -372,7 +390,7 @@ export function parseAirtableRecord(record: AirtableRecord): Product {
     'url + code': (f['url + code'] as string) || '',
     producer: (f.producer as string) || undefined,
     label: (f.label as string) || undefined,
-    length: asString(f.length),
+    length: formatDimensions(lengthValues),
     length_1: parsedLengths.length_1,
     length_2: parsedLengths.length_2,
     side: (f.side as number | string) || undefined,
@@ -397,5 +415,8 @@ export function parseAirtableRecord(record: AirtableRecord): Product {
     cena_brutto: parsePrice(f.cena_brutto),
     cena_brutto_laser: parsePrice(f.cena_brutto_laser),
     ukryj_cene: f.ukryj_cene === true,
+    // Only a blat is priced from its dimensions; for every other kind the flag
+    // would be meaningless, so it stays absent.
+    unavailable: kind === 'blat' ? isUnpriceable(widthValues, lengthValues) : undefined,
   };
 }

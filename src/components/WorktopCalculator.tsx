@@ -1,5 +1,11 @@
 import { useState, useEffect, useLayoutEffect, useRef } from "react";
 import type { Product } from "../types/product";
+import {
+  isPriceable,
+  pickPriceableVariant,
+  priceableLengths,
+  worktopVariants,
+} from "../lib/worktop";
 import "./WorktopCalculator.css";
 
 interface WorktopCalculatorProps {
@@ -17,14 +23,27 @@ interface WidthVariant {
 
 const VAT_RATE = 1.23;
 
+// Shown instead of a price when nothing about the product can be priced. The
+// customer is at a kiosk in the showroom, so the way forward is a person.
+const UNAVAILABLE_NOTICE =
+  "Ten wariant jest chwilowo niedostępny — po cenę zapytaj obsługę.";
+
 export default function WorktopCalculator({ product: initialProduct, thicknessVariants }: WorktopCalculatorProps) {
-  // State for selected thickness variant
-  const [selectedThickness, setSelectedThickness] = useState<number>(initialProduct.thickness);
+  // Thicknesses on offer, thinnest first. Variants that cannot be priced stay
+  // on the list — the QR code the customer scanned may well be on one of them,
+  // and hiding it would leave them wondering whether they scanned the wrong
+  // sample.
+  const variants = worktopVariants(initialProduct, thicknessVariants);
+
+  // State for selected thickness variant. Opens on the scanned record unless it
+  // has no price to show, in which case the nearest priceable thickness wins.
+  const [selectedThickness, setSelectedThickness] = useState<number>(
+    () => pickPriceableVariant(initialProduct, thicknessVariants).thickness,
+  );
 
   // Get the current product based on selected thickness
-  const product = selectedThickness === initialProduct.thickness
-    ? initialProduct
-    : thicknessVariants?.find(v => v.thickness === selectedThickness) || initialProduct;
+  const product =
+    variants.find((v) => v.thickness === selectedThickness) ?? initialProduct;
 
   // Determine if product can have both sides (but not for SL label)
   const isSlimLine = product.label === "SL";
@@ -51,9 +70,7 @@ export default function WorktopCalculator({ product: initialProduct, thicknessVa
   const [selectedLength, setSelectedLength] = useState<number | null>(null);
 
   // Get available lengths from product
-  const availableLengths: number[] = [];
-  if (product.length_1 !== undefined) availableLengths.push(product.length_1);
-  if (product.length_2 !== undefined) availableLengths.push(product.length_2);
+  const availableLengths: number[] = priceableLengths(product);
 
   // Build available width variants from parsed width values
   const availableWidths: number[] = [];
@@ -98,9 +115,10 @@ export default function WorktopCalculator({ product: initialProduct, thicknessVa
     ? availableLengths.filter(l => lookupMapPrice(selectedWidth, l, selectedSide) !== undefined)
     : availableLengths;
 
-  // Hide the length chip group when the only available length is 0 (unit-priced row with no real length dimension)
-  const showLengthGroup = !(availableLengths.length === 1 && availableLengths[0] === 0);
-
+  // Whether this thickness can be priced at all. False only for records Airtable
+  // has not finished filling in; every combination of the pickers below would
+  // otherwise show a per-metre rate as though it were a finished price.
+  const variantPriceable = isPriceable(product);
 
   // Set initial selections only if not already set, or if current selection is invalid
   useEffect(() => {
@@ -128,6 +146,7 @@ export default function WorktopCalculator({ product: initialProduct, thicknessVa
 
   // Calculate price based on selections
   const calculatePrice = () => {
+    if (!variantPriceable) return null;
     if (selectedWidth === null || selectedLength === null) return null;
 
     let netPrice: number;
@@ -136,9 +155,7 @@ export default function WorktopCalculator({ product: initialProduct, thicknessVa
       const priceValue = lookupMapPrice(selectedWidth, selectedLength, selectedSide);
       if (priceValue === undefined) return null;
       // Prices in the new Juan map are per-meter; multiply by length in meters.
-      // Exception: a length of 0 denotes a unit-priced row with no real length dimension,
-      // so the map value already IS the final net price — don't multiply by 0.
-      netPrice = selectedLength === 0 ? priceValue : priceValue * (selectedLength / 1000);
+      netPrice = priceValue * (selectedLength / 1000);
     } else {
       const variant = widthVariants.find(v => v.width === selectedWidth);
       if (!variant) return null;
@@ -198,17 +215,6 @@ export default function WorktopCalculator({ product: initialProduct, thicknessVa
     return side === 1 ? "jednostronnie zaoblony" : "obustronnie zaoblony";
   };
 
-  // Build available thickness options
-  const availableThicknesses: number[] = [initialProduct.thickness];
-  if (thicknessVariants && thicknessVariants.length > 0) {
-    thicknessVariants.forEach(v => {
-      if (!availableThicknesses.includes(v.thickness)) {
-        availableThicknesses.push(v.thickness);
-      }
-    });
-  }
-  availableThicknesses.sort((a, b) => a - b);
-
   return (
     <div className="worktop-calculator">
       <div className="calculator-header">
@@ -217,25 +223,36 @@ export default function WorktopCalculator({ product: initialProduct, thicknessVa
 
       <div className="calculator-options">
         {/* Thickness selection - only if variants exist */}
-        {availableThicknesses.length > 1 && (
+        {variants.length > 1 && (
           <div className="option-group">
             <label className="option-label">Grubość:</label>
             <div className="chip-selector">
-              {availableThicknesses.map((thickness) => (
-                <button
-                  key={thickness}
-                  className={`chip ${selectedThickness === thickness ? 'chip-active' : ''}`}
-                  onClick={() => setSelectedThickness(thickness)}
-                >
-                  {thickness}mm
-                </button>
-              ))}
+              {variants.map((variant) => {
+                const priceable = isPriceable(variant);
+                return (
+                  <button
+                    key={variant.thickness}
+                    className={`chip ${selectedThickness === variant.thickness ? 'chip-active' : ''} ${priceable ? '' : 'chip-unavailable'}`}
+                    disabled={!priceable}
+                    onClick={() => setSelectedThickness(variant.thickness)}
+                  >
+                    {variant.thickness}mm
+                    {!priceable && <span className="chip-note">niedostępne</span>}
+                  </button>
+                );
+              })}
             </div>
           </div>
         )}
 
+        {/* Every remaining picker only makes sense for a variant that has a
+            price. When it has none, the customer is told so instead. */}
+        {!variantPriceable && (
+          <p className="calculator-notice">{UNAVAILABLE_NOTICE}</p>
+        )}
+
         {/* Side selection - only if product supports both */}
-        {canChooseSide && (
+        {variantPriceable && canChooseSide && (
           <div className="option-group">
             <label className="option-label">Zaoblenie:</label>
             <div className="chip-selector">
@@ -256,27 +273,29 @@ export default function WorktopCalculator({ product: initialProduct, thicknessVa
         )}
 
         {/* Width selection */}
-        <div className="option-group">
-          <label className="option-label">Szerokość:</label>
-          <div className="chip-selector">
-            {widthVariants.map((variant) => {
-              const hasPrice = selectedSide === 1 ? variant.hasSide1 : variant.hasSide2;
-              if (!hasPrice) return null;
-              return (
-                <button
-                  key={variant.width}
-                  className={`chip ${selectedWidth === variant.width ? 'chip-active' : ''}`}
-                  onClick={() => setSelectedWidth(variant.width)}
-                >
-                  {variant.width}mm
-                </button>
-              );
-            })}
+        {variantPriceable && (
+          <div className="option-group">
+            <label className="option-label">Szerokość:</label>
+            <div className="chip-selector">
+              {widthVariants.map((variant) => {
+                const hasPrice = selectedSide === 1 ? variant.hasSide1 : variant.hasSide2;
+                if (!hasPrice) return null;
+                return (
+                  <button
+                    key={variant.width}
+                    className={`chip ${selectedWidth === variant.width ? 'chip-active' : ''}`}
+                    onClick={() => setSelectedWidth(variant.width)}
+                  >
+                    {variant.width}mm
+                  </button>
+                );
+              })}
+            </div>
           </div>
-        </div>
+        )}
 
         {/* Length selection */}
-        {showLengthGroup && (
+        {variantPriceable && (
           <div className="option-group">
             <label className="option-label">Długość:</label>
             <div className="chip-selector">

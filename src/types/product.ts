@@ -82,4 +82,8 @@ export interface Product {
   kolekcja?: string;
   qr_id?: string;
   is_new?: boolean;
+  // Worktops only. Set by the API when the record lacks a dimension the price
+  // calculator needs (today: the 18mm rows whose {dlugosci} is "0"), so the
+  // variant must be shown as unavailable and never priced. See src/lib/worktop.ts.
+  unavailable?: boolean;
 }
