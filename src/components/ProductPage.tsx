@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { useParams, useLocation } from "react-router-dom";
 import { fetchProduct, type ProductWithVariants } from "../services/airtable";
 import type { ProductKind } from "../types/product";
+import { isPriceable, pickPriceableVariant, worktopVariants } from "../lib/worktop";
 import WorktopCalculator from "./WorktopCalculator";
 import BrandHeader from "./BrandHeader";
 import ScrollCue from "./ScrollCue";
@@ -171,6 +172,14 @@ export default function ProductPage() {
 
   const hasProductInfo = product.decor || product.structure || product.category || product.description;
 
+  // The dimensions listed above the calculator must describe the variant the
+  // calculator actually opens on. A record Airtable has not finished filling in
+  // hands the calculator over to the nearest priceable thickness, so the rows
+  // below have to follow it rather than the record that was scanned.
+  const shownVariant = isWorktop
+    ? pickPriceableVariant(product, thicknessVariants)
+    : product;
+
   return (
     <ProductShell>
       <div className="product-container">
@@ -271,17 +280,19 @@ export default function ProductPage() {
               <div className="info-row">
                 <span className="info-label">Dostępne grubości:</span>
                 <span className="info-value-simple">
-                  {product.thickness}mm
-                  {thicknessVariants &&
-                    thicknessVariants.length > 0 &&
-                    thicknessVariants.map((v) => `, ${v.thickness}mm`).join("")}
+                  {worktopVariants(product, thicknessVariants)
+                    .map(
+                      (v) =>
+                        `${v.thickness}mm${isPriceable(v) ? "" : " (niedostępne)"}`,
+                    )
+                    .join(", ")}
                 </span>
               </div>
               <div className="info-row">
                 <span className="info-label">Dostępne szerokości:</span>
                 <span className="info-value-simple">
-                  {product.width
-                    ? product.width
+                  {shownVariant.width
+                    ? shownVariant.width
                         .split(";")
                         .map((w) => `${w.trim()}mm`)
                         .join(", ")
@@ -291,8 +302,8 @@ export default function ProductPage() {
               <div className="info-row">
                 <span className="info-label">Dostępne długości:</span>
                 <span className="info-value-simple">
-                  {product.length
-                    ? product.length
+                  {shownVariant.length
+                    ? shownVariant.length
                         .split(";")
                         .map((l) => `${l.trim()}mm`)
                         .join(", ")
@@ -304,7 +315,12 @@ export default function ProductPage() {
                 <span className="info-value-simple">{product.sellUnit}</span>
               </div>
             </div>
+            {/* Keyed by record: a scan navigates without unmounting the page,
+                and the calculator has to re-pick its opening thickness for the
+                product that was just scanned rather than keep the previous
+                one. */}
             <WorktopCalculator
+              key={product.id}
               product={product}
               thicknessVariants={thicknessVariants}
             />
