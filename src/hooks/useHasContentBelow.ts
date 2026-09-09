@@ -1,14 +1,15 @@
 import { useEffect, useState } from "react";
 
-// Poniżej tego progu resztka strony to zaokrąglenia i cień paddingu, a nie
-// treść — bez niego wskaźnik migotałby na samym końcu przewijania.
+// Below this threshold what remains is rounding and a sliver of padding
+// rather than content — without it the cue would flicker at the very end of
+// the scroll.
 const THRESHOLD_PX = 24;
 
 /**
- * Czy poniżej krawędzi ekranu jest jeszcze treść do przewinięcia.
+ * Whether there is still content to scroll to below the edge of the screen.
  *
- * Przewija się okno, nie żaden kontener — jedyne miejsce w aplikacji, które
- * dotyka przewijania, to `window.scrollTo(0, 0)` w ProductPage.
+ * The window scrolls, not any container — the only place in the app that
+ * touches scrolling is `window.scrollTo(0, 0)` in ProductPage.
  */
 export default function useHasContentBelow(): boolean {
   const [hasContentBelow, setHasContentBelow] = useState(false);
@@ -24,8 +25,8 @@ export default function useHasContentBelow(): boolean {
     window.addEventListener("scroll", check, { passive: true });
     window.addEventListener("resize", check);
 
-    // Wysokość dokumentu zmienia się także bez przewijania i bez zmiany
-    // rozmiaru okna: karta z ceną pojawia się i znika po dotknięciu chipa.
+    // Document height also changes without scrolling and without a window
+    // resize: the price card appears and disappears as chips are tapped.
     const observer = new ResizeObserver(check);
     observer.observe(document.body);
 

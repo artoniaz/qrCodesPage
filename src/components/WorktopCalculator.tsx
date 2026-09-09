@@ -167,11 +167,11 @@ export default function WorktopCalculator({ product: initialProduct, thicknessVa
   const price = calculatePrice();
   const hasPrice = price !== null;
 
-  // Pasek z ceną jest przypięty do dołu ekranu (position: fixed), więc nie
-  // zajmuje miejsca w układzie. Strona musi je zarezerwować, inaczej pasek
-  // przykryłby ostatni rząd chipów. Wysokość jest MIERZONA, nie liczona ze
-  // zmiennych: skala typograficzna jest płynna (clamp), więc każdy wzór na
-  // calc() rozjechałby się przy pierwszej zmianie szerokości ekranu.
+  // The price bar is pinned to the bottom of the screen (position: fixed), so
+  // it takes no room in the layout. The page has to reserve that room or the
+  // bar would cover the last row of chips. The height is MEASURED rather than
+  // computed from the tokens: the type scale is fluid (clamp), so any calc()
+  // formula would drift on the first change of screen width.
   const priceBarRef = useRef<HTMLDivElement>(null);
 
   useLayoutEffect(() => {
@@ -188,7 +188,8 @@ export default function WorktopCalculator({ product: initialProduct, thicknessVa
     observer.observe(bar);
     return () => {
       observer.disconnect();
-      // Bez tego rezerwacja zostałaby po przejściu na produkt bez kalkulatora.
+      // Without this the reservation would survive a move to a product that
+      // has no calculator.
       root.style.removeProperty("--azm-bottom-bar");
     };
   }, [hasPrice]);

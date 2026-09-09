@@ -7,8 +7,8 @@ import BrandHeader from "./BrandHeader";
 import ScrollCue from "./ScrollCue";
 import "./ProductPage.css";
 
-// Strona ma cztery punkty wyjścia (ładowanie, błąd, brak produktu, dane).
-// Powłoka trzyma nagłówek marki w jednym miejscu dla wszystkich czterech.
+// The page has four exits (loading, error, not found, data). The shell keeps
+// the brand header in one place for all four.
 function ProductShell({ children }: { children: React.ReactNode }) {
   return (
     <div className="product-page">
@@ -42,8 +42,8 @@ function InfoRow({
 }: {
   label: string;
   value?: string | number | null;
-  // Czerwień jest w brandbooku akcentem rzadkim i celowym — na tej stronie
-  // niesie ją wyłącznie cena.
+  // In the brandbook red is a rare, deliberate accent — on this page it is
+  // carried by the price alone.
   accent?: boolean;
 }) {
   if (value === undefined || value === null || value === "") return null;

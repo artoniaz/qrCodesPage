@@ -1,18 +1,19 @@
 .scroll-cue {
   position: fixed;
   left: 50%;
-  /* Nigdy pod paskiem z ceną — zmienną ustawia kalkulator blatów, na
-     pozostałych widokach jest niezdefiniowana i wchodzi wartość zapasowa. */
+  /* Never underneath the price bar — the worktop calculator sets the variable;
+     on every other view it is undefined and the fallback applies. */
   bottom: calc(var(--azm-bottom-bar, 0px) + 1rem);
   transform: translateX(-50%);
   z-index: 11;
   display: flex;
-  /* Czerwień jest zarezerwowana dla cen, a szewron pojawia się dokładnie nad
-     czerwonym paskiem — dwa akcenty obok siebie zabiłyby hierarchię. */
+  /* Red is reserved for prices and the chevron sits directly above the red
+     bar — two accents side by side would kill the hierarchy. */
   color: var(--azm-ink);
   pointer-events: none;
-  /* Płaska plama w kolorze tła odcina szewron od tekstu, nad którym przepływa.
-     Bez cienia i bez zaokrągleń — brandbook dopuszcza tylko płaskie kolory. */
+  /* A flat patch in the background colour separates the chevron from the text
+     it floats over. No shadow, no rounding — the brandbook allows flat colour
+     only. */
   background: var(--azm-sand);
   padding: 4px 12px;
   animation: scroll-cue-drop 1.8s ease-in-out infinite;

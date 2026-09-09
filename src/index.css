@@ -1,43 +1,43 @@
 /* ---------------------------------------------------------------------------
-   Tokeny marki azMEBLOPŁYT.
-   Paleta i zasady pochodzą z brandbooka; wartości nie są tu do "poprawiania" —
-   każda zmiana odcienia to odstępstwo od identyfikacji wizualnej.
+   azMEBLOPŁYT brand tokens.
+   Palette and rules come from the brandbook; the values are not here to be
+   "improved" — changing a shade is a departure from the visual identity.
 --------------------------------------------------------------------------- */
 :root {
-  --azm-red: #c21834;   /* akcent — rzadki i celowy, nigdy jako tło pod blokiem tekstu */
-  --azm-ink: #1b1b1b;   /* tekst podstawowy       (13,87:1 na piaskowym) */
-  --azm-sand: #e8e7de;  /* tło                                            */
-  --azm-grey: #4d4848;  /* teksty drugorzędne     (7,24:1 na piaskowym)   */
-  --azm-line: #1b1b1b;  /* linie — zawsze 2px, jednolita grubość          */
+  --azm-red: #c21834;   /* accent — rare and deliberate, never behind a text block */
+  --azm-ink: #1b1b1b;   /* body text            (13.87:1 on sand) */
+  --azm-sand: #e8e7de;  /* background                             */
+  --azm-grey: #4d4848;  /* secondary text        (7.24:1 on sand) */
+  --azm-line: #1b1b1b;  /* rules — always 2px, uniform thickness  */
   --azm-white: #fff;
 
-  /* Brandbook: "preferowane elementy geometryczne z ostrymi kątami". */
+  /* Brandbook: "geometric elements with sharp angles are preferred". */
   --azm-radius: 0;
   --azm-stroke: 2px;
 
-  /* Pole ochronne logo = wysokość monogramu. W wersji poziomej dodatkowej
-     (logo-poziome.png) monogram to czerwone "O": 471 z 867 px wysokości. */
+  /* Logo clear space = monogram height. In the secondary horizontal version
+     (logo-poziome.png) the monogram is the red "O": 471 of 867px. */
   --azm-logo-aspect: 4.752;
   --azm-logo-clear: 0.543;
 
   /* ---------------------------------------------------------------------
-     Skala typograficzna kiosku.
-     Klient stoi przed tabletem, a nie trzyma go w dłoni — krok bazowy jest
-     więc wyraźnie większy niż w typowej aplikacji webowej. Wartości podane
-     poniżej to rozmiar przy szerokości 768 px (typowy tablet w pionie);
-     płynna część skaluje je w zakresie ok. 600-1400 px.
+     Kiosk type scale.
+     The customer stands in front of the tablet rather than holding it, so the
+     base step is markedly larger than in an ordinary web app. The sizes noted
+     below are the rendered size at 768px (a typical portrait tablet); the
+     fluid term scales them across roughly 600-1400px.
 
-     Część rem w każdym clamp() jest celowa — sam vw psułby powiększanie
-     czcionki w ustawieniach systemu.
+     The rem term in every clamp() is deliberate — vw alone would break the
+     system font-size setting.
      --------------------------------------------------------------------- */
-  --fs-label: clamp(0.95rem, 0.73rem + 0.7vw, 1.3rem);    /* etykiety   ~17px */
-  --fs-body: clamp(1.05rem, 0.83rem + 0.75vw, 1.45rem);   /* wartości   ~19px */
-  --fs-section: clamp(1.2rem, 0.97rem + 0.85vw, 1.65rem); /* nagłówki   ~22px */
-  --fs-lead: clamp(1.4rem, 1.15rem + 1vw, 1.95rem);       /* wyróżnione ~26px */
-  --fs-price: clamp(1.6rem, 1.32rem + 1.15vw, 2.25rem);   /* ceny       ~30px */
-  --fs-title: clamp(2rem, 1.75rem + 1.6vw, 3rem);         /* tytuł      ~40px */
+  --fs-label: clamp(0.95rem, 0.73rem + 0.7vw, 1.3rem);    /* labels     ~17px */
+  --fs-body: clamp(1.05rem, 0.83rem + 0.75vw, 1.45rem);   /* values     ~19px */
+  --fs-section: clamp(1.2rem, 0.97rem + 0.85vw, 1.65rem); /* headings   ~22px */
+  --fs-lead: clamp(1.4rem, 1.15rem + 1vw, 1.95rem);       /* emphasised ~26px */
+  --fs-price: clamp(1.6rem, 1.32rem + 1.15vw, 2.25rem);   /* prices     ~30px */
+  --fs-title: clamp(2rem, 1.75rem + 1.6vw, 3rem);         /* title      ~40px */
 
-  /* Odstępy rosną razem z tekstem, żeby układ nie robił się ciasny. */
+  /* Spacing grows with the type so the layout does not turn cramped. */
   --gap-row: clamp(0.5rem, 1.2vw, 0.9rem);
   --gap-col: clamp(1rem, 2.5vw, 2rem);
   --pad-page: clamp(1rem, 3vw, 2rem);
@@ -71,8 +71,8 @@ body {
   overflow-x: hidden;
   color: var(--azm-ink);
 
-  /* Akcent geometryczny: motyw kątowy wywiedziony z zygzaka monogramu.
-     Jednolita grubość linii i ostre złączenia (miter) — zgodnie z brandbookiem. */
+  /* Geometric accent: an angular motif derived from the monogram's zigzag.
+     Uniform stroke width and mitred joins, per the brandbook. */
   background-color: var(--azm-sand);
   background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='560' height='420' viewBox='0 0 560 420'%3E%3Cg fill='none' stroke='%231b1b1b' stroke-opacity='.08' stroke-width='2' stroke-linejoin='miter' stroke-linecap='butt'%3E%3Cpath d='M0 268 160 108 266 214 426 54 560 188'/%3E%3Cpath d='M0 344 160 184 266 290 426 130 560 264'/%3E%3Cpath d='M0 420 160 260 266 366 426 206 560 340'/%3E%3C/g%3E%3C/svg%3E");
   background-repeat: no-repeat;
@@ -80,7 +80,7 @@ body {
   background-attachment: scroll;
 }
 
-/* Reset kształtów — domyślne zaokrąglenia przeglądarki kłócą się z marką. */
+/* Shape reset — the browser's default rounding fights the brand. */
 button,
 input,
 select,

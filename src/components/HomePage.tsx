@@ -5,8 +5,8 @@ export default function HomePage() {
   return (
     <div className="home">
       <div className="home-card">
-        {/* Wersja pozioma dodatkowa zawiera już hasło "akcesoria i płyty
-            meblowe" — nie powtarzamy go pod logotypem. */}
+        {/* The secondary horizontal logo already carries the "akcesoria i
+            płyty meblowe" tagline — no need to repeat it below the logotype. */}
         <img
           className="home-logo"
           src={logo}
@@ -18,8 +18,8 @@ export default function HomePage() {
         <span className="home-rule" aria-hidden="true" />
 
         <div className="scan" aria-hidden="true">
-          {/* Jednolita grubość linii i ostre kąty — bez zaokrągleń i wypełnień,
-              zgodnie z zasadami dla ikon w brandbooku. */}
+          {/* Uniform stroke width and sharp angles — no rounding and no fills,
+              per the brandbook's rules for icons. */}
           <svg
             className="scan-icon"
             viewBox="0 0 64 64"

@@ -1,18 +1,20 @@
 /**
- * Lokalny odpowiednik funkcji serverless z `api/` — pozwala odpytywać prawdziwą
- * bazę Airtable bez Vercel CLI.
+ * Local stand-in for the serverless functions in `api/` — lets the app query
+ * the real Airtable base without the Vercel CLI.
  *
- * Działa dlatego, że `api/_lib/types.ts` celowo nie zależy od `@vercel/node`,
- * tylko deklaruje minimalny kształt request/response. Handler dotyka wyłącznie
- * `req.method`, `req.headers`, `req.query`, `res.setHeader`, `res.status()`
- * i `res.send()` — a to jest `IncomingMessage`/`ServerResponse` plus trzy
- * metody, które dokłada poniższy adapter.
+ * It works because `api/_lib/types.ts` deliberately does not depend on
+ * `@vercel/node` and instead declares a minimal request/response shape. The
+ * handler only touches `req.method`, `req.headers`, `req.query`,
+ * `res.setHeader`, `res.status()` and `res.send()` — an
+ * `IncomingMessage`/`ServerResponse` plus the three methods the adapter below
+ * adds.
  *
- * Token nigdy nie opuszcza tego procesu: przeglądarka rozmawia z proxy Vite
- * (`vite.config.ts`), proxy z tym serwerem, a dopiero ten serwer z Airtable.
- * Odpytywanie Airtable bezpośrednio z SPA odtworzyłoby incydent z maja 2026.
+ * The token never leaves this process: the browser talks to the Vite proxy
+ * (`vite.config.ts`), the proxy to this server, and only this server to
+ * Airtable. Querying Airtable straight from the SPA would recreate the May
+ * 2026 incident.
  *
- * Uruchomienie: npm run dev:api
+ * Run with: npm run dev:api
  */
 import http from 'node:http';
 import type { VercelRequest, VercelResponse } from '../api/_lib/types.js';
@@ -21,11 +23,11 @@ import productHandler from '../api/product.js';
 const PORT = Number(process.env.PORT ?? 3000);
 const REQUIRED_ENV = ['AIRTABLE_TOKEN', 'AIRTABLE_BASE_ID', 'AIRTABLE_FRONT_BASE_ID'];
 
-// Node ≥ 21.7 czyta .env samo — bez dotenv i bez flagi w skrypcie npm.
+// Node >= 21.7 reads .env by itself — no dotenv and no flag in the npm script.
 try {
   process.loadEnvFile();
 } catch {
-  // Brak .env nie jest tu błędem: zmienne mogą pochodzić ze środowiska powłoki.
+  // A missing .env is not an error here: the variables may come from the shell.
 }
 
 const missing = REQUIRED_ENV.filter((name) => !process.env[name]);
@@ -35,7 +37,7 @@ if (missing.length > 0) {
   process.exit(1);
 }
 
-/** Vercel podaje powtórzony `?a=1&a=2` jako tablicę — handler na tym polega. */
+/** Vercel hands a repeated `?a=1&a=2` over as an array — the handler relies on that. */
 function toQuery(searchParams: URLSearchParams): VercelRequest['query'] {
   const query: VercelRequest['query'] = {};
   for (const key of new Set(searchParams.keys())) {
@@ -45,7 +47,7 @@ function toQuery(searchParams: URLSearchParams): VercelRequest['query'] {
   return query;
 }
 
-/** Dokłada do ServerResponse trzy metody, których używa warstwa `api/`. */
+/** Adds to ServerResponse the three methods the `api/` layer uses. */
 function toVercelResponse(res: http.ServerResponse): VercelResponse {
   const vercelRes = res as VercelResponse;
   vercelRes.status = (code) => {
@@ -77,14 +79,14 @@ const server = http.createServer((req, res) => {
   vercelReq.query = toQuery(url.searchParams);
 
   void productHandler(vercelReq, vercelRes).catch((err: unknown) => {
-    // withGuards łapie wszystko samo; ten catch to ostatnia siatka.
+    // withGuards catches everything itself; this is the last safety net.
     console.error('[dev-api] nieobsłużony błąd', err);
     if (!res.headersSent) vercelRes.status(500).json({ error: 'Internal Server Error' });
   });
 });
 
-// Port 3000 bywa zajęty przez inny projekt — bez tego Node wyrzuca surowy
-// stack trace z 'error' event, co nic nie mówi o tym, co zrobić dalej.
+// Port 3000 is often taken by another project — without this Node throws a
+// raw stack trace from the 'error' event, which says nothing about what to do.
 server.on('error', (err: NodeJS.ErrnoException) => {
   if (err.code === 'EADDRINUSE') {
     console.error(`[dev-api] Port ${PORT} jest już zajęty przez inny proces.`);

@@ -42,7 +42,8 @@
 }
 
 .chip {
-  /* Kiosk obsługiwany palcem — 48 px to dolna granica wygodnego celu dotyku. */
+  /* The kiosk is finger-operated — 48px is the lower bound for a comfortable
+     touch target. */
   min-height: 48px;
   padding: 0.6em 1.1em;
   border: var(--azm-stroke) solid var(--azm-line);
@@ -71,9 +72,10 @@
   border-color: var(--azm-red);
 }
 
-/* Przypięty do dołu ekranu: cena to liczba, po którą klient przyszedł, więc
-   nie może wypadać poniżej zagięcia przy wyborze wariantów. Miejsce na pasek
-   rezerwuje .product-body przez --azm-bottom-bar (wysokość mierzy kalkulator). */
+/* Pinned to the bottom of the screen: the price is the number the customer
+   came for, so it must not fall below the fold while options are being
+   chosen. Room is reserved by .product-body through --azm-bottom-bar, whose
+   value this calculator measures. */
 .price-display {
   position: fixed;
   left: 0;
@@ -86,12 +88,12 @@
 }
 
 .price-display .price-card {
-  /* Ta sama oś co .product-container — pasek nie może uciekać w bok. */
+  /* Same axis as .product-container — the bar must not drift sideways. */
   max-width: 900px;
   margin: 0 auto;
   border-top: none;
-  /* Ciaśniej w pionie niż karta w układzie: pasek zabiera wysokość ekranu
-     przez cały czas, więc każdy zbędny piksel paddingu jest realnym kosztem. */
+  /* Tighter vertically than the in-flow card: the bar occupies screen height
+     permanently, so every spare pixel of padding is a real cost. */
   padding: var(--gap-row) var(--gap-col);
 }
 
@@ -130,7 +132,7 @@
   white-space: nowrap;
 }
 
-/* Cena brutto to liczba, po którą klient tu przyszedł. */
+/* The gross price is the number the customer came here for. */
 .price-row.gross .price-value {
   font-size: var(--fs-price);
   font-weight: 700;

@@ -7,7 +7,7 @@
   padding: 2rem;
   box-sizing: border-box;
 
-  /* Tło dziedziczy piaskowy kolor i akcent geometryczny z body. */
+  /* Background inherits the sand colour and geometric accent from body. */
   color: var(--azm-ink);
   text-align: center;
 }
@@ -23,12 +23,12 @@
 }
 
 .home-logo {
-  /* Powyżej brandbookowego minimum 180 px dla wersji z hasłem. */
+  /* Above the brandbook minimum of 180px for the version with the tagline. */
   --logo-w: clamp(280px, 46vw, 460px);
   width: var(--logo-w);
   height: auto;
   display: block;
-  /* Pole ochronne = wysokość monogramu = szer. / aspect * 0,543. */
+  /* Clear space = monogram height = width / aspect * 0.543. */
   margin-bottom: calc(var(--logo-w) / var(--azm-logo-aspect) * var(--azm-logo-clear));
 }
 
@@ -41,7 +41,7 @@
   color: var(--azm-ink);
 }
 
-/* Czerwień jako rzadki, celowy akcent — jedyny w tym bloku. */
+/* Red as a rare, deliberate accent — the only one in this block. */
 .home-rule {
   display: block;
   width: clamp(80px, 14vw, 120px);
@@ -50,7 +50,7 @@
   margin: clamp(1.4rem, 4vw, 2rem) 0 0;
 }
 
-/* ---------- Ikona skanowania ---------- */
+/* ---------- Scan icon ---------- */
 .scan {
   position: relative;
   margin: clamp(1.8rem, 5vw, 2.8rem) 0 clamp(1.4rem, 4vw, 2rem);
@@ -77,7 +77,7 @@
   animation: scan-sweep 2.2s ease-in-out infinite;
 }
 
-/* ---------- Instrukcja ---------- */
+/* ---------- Instruction ---------- */
 .home-instruction {
   margin: 0;
   font-weight: 700;
@@ -94,7 +94,7 @@
   color: var(--azm-grey);
 }
 
-/* ---------- Ruch ---------- */
+/* ---------- Motion ---------- */
 @keyframes home-in {
   from {
     opacity: 0;

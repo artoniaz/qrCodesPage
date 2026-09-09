@@ -2,8 +2,8 @@ import logo from "../assets/logo-poziome.png";
 import "./BrandHeader.css";
 
 /**
- * Wersja pozioma dodatkowa logo — brandbook przypisuje ją wprost do banerów
- * i nagłówków www. Odstępy liczone są z pola ochronnego, nie dobierane na oko.
+ * The secondary horizontal logo — the brandbook assigns it to banners and web
+ * headers. Spacing is derived from the clear-space rule, not eyeballed.
  */
 export default function BrandHeader() {
   return (

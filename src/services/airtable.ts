@@ -17,8 +17,9 @@ const TABLE_ID_SET = new Set(TABLE_IDS);
 // consolidated tables' hand-maintained {id} field — see api/_lib/airtable.ts.
 const RECORD_ID_RE = /^rec[A-Za-z0-9]{14,21}$/;
 
-// Ekran kiosku ogląda klient w hali sprzedaży, nie programista — komunikaty
-// techniczne trafiają do konsoli, na ekran idzie jedno zdanie po polsku.
+// The kiosk screen is read by a customer in the showroom, not by a developer
+// — technical detail goes to the console and one Polish sentence to the
+// screen.
 const SCAN_AGAIN_NOTICE =
   'Nie udało się wczytać produktu. Zeskanuj kod ponownie lub poproś o pomoc obsługę.';
 

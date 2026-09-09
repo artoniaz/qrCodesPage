@@ -2,11 +2,11 @@ import useHasContentBelow from "../hooks/useHasContentBelow";
 import "./ScrollCue.css";
 
 /**
- * Sygnał, że treść trwa poniżej krawędzi ekranu. Na płaskim tle bez cieni
- * i bez widocznego paska przewijania nic innego tego nie komunikuje.
+ * Signals that content continues below the edge of the screen. On a flat
+ * background with no shadows and no visible scrollbar, nothing else says so.
  *
- * Szewron zbudowany z dwóch prostych kresek pod ostrym kątem — ten sam motyw
- * geometryczny co zygzak w monogramie i akcent tła.
+ * A chevron of two straight strokes at a sharp angle — the same geometric
+ * motif as the monogram's zigzag and the background accent.
  */
 export default function ScrollCue() {
   const hasContentBelow = useHasContentBelow();

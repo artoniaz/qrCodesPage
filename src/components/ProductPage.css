@@ -3,7 +3,7 @@
   width: 100%;
   display: flex;
   flex-direction: column;
-  /* Tło i akcent geometryczny dziedziczone z body. */
+  /* Background and geometric accent inherited from body. */
   overflow-y: auto;
 }
 
@@ -12,9 +12,9 @@
   display: flex;
   justify-content: flex-start;
   align-items: flex-start;
-  /* Dolny zapas mieści przypięty pasek z ceną. Zmienną ustawia kalkulator
-     blatów; na pozostałych widokach jest niezdefiniowana i zostaje sam
-     zwykły odstęp strony. */
+  /* Bottom room for the pinned price bar. The worktop calculator sets the
+     variable; on every other view it is undefined and only the ordinary page
+     padding remains. */
   padding: var(--pad-page);
   padding-bottom: calc(var(--pad-page) + var(--azm-bottom-bar, 0px) + 2rem);
   box-sizing: border-box;
@@ -44,7 +44,7 @@
 .loader::after {
   content: '';
   position: absolute;
-  /* Jedyne dopuszczone koło poza sygnetem — element funkcjonalny, nie dekoracja. */
+  /* The only circle allowed besides the monogram — functional, not decorative. */
   border-radius: 50%;
   animation: pulse 2s ease-in-out infinite;
 }
@@ -136,9 +136,9 @@
 .product-info {
   display: flex;
   flex-direction: column;
-  /* Ciaśniej niż --gap-col: przy powiększonym tekście te trzy sekcje same
-     w sobie tworzą wyraźne bloki, a każdy zbędny odstęp spycha cenę
-     poniżej zagięcia ekranu. */
+  /* Tighter than --gap-col: at kiosk type sizes these three sections already
+     read as distinct blocks, and every spare gap pushes the price below the
+     fold. */
   gap: var(--gap-row);
   margin-bottom: var(--gap-col);
 }
@@ -216,14 +216,13 @@
 }
 
 /* ---------------------------------------------------------------------------
-   Wiersze etykieta/wartość.
+   Label / value rows.
 
-   Siatka żyje na kontenerze, a same wiersze są `display: contents`, więc
-   wszystkie etykiety trafiają do jednej kolumny o szerokości `max-content`.
-   Dzięki temu kolumna dopasowuje się do najdłuższej etykiety zamiast być
-   zapisana na sztywno w pikselach — przy poprzednich 110/140/175 px
-   "Forma sprzedaży:" i "Dostępne szerokości:" łamały się na dwie linie, a po
-   powiększeniu tekstu łamałyby się jeszcze częściej.
+   The grid lives on the container and the rows are `display: contents`, so
+   every label lands in a single `max-content` column. That column sizes
+   itself to the longest label instead of being pinned to a pixel width — at
+   the previous 110/140/175px, "Forma sprzedaży:" and "Dostępne szerokości:"
+   already wrapped onto two lines, and larger type would have wrapped more.
 --------------------------------------------------------------------------- */
 .worktop-basic-info,
 .variant-details {
@@ -239,8 +238,8 @@
   display: contents;
 }
 
-/* Nagłówek grupy i tabela cen są bezpośrednimi dziećmi siatki — muszą zająć
-   obie kolumny, inaczej wpadłyby do kolumny etykiet. */
+/* The group heading and the price table are direct grid children — they must
+   span both columns or they would land in the label column. */
 .worktop-basic-info > *:not(.info-row) {
   grid-column: 1 / -1;
 }
@@ -266,7 +265,7 @@
   word-break: break-word;
 }
 
-/* Czerwień niesie na tej stronie wyłącznie cena — rzadki, celowy akcent. */
+/* On this page red is carried by the price alone — a rare, deliberate accent. */
 .variant-value.price {
   color: var(--azm-red);
   font-weight: 700;
@@ -358,7 +357,7 @@
   font-size: var(--fs-label);
 }
 
-/* Komórki z cenami — jedyny akcent w tabeli. */
+/* Price cells — the only accent in the table. */
 .engraving-price-table td {
   color: var(--azm-red);
   font-weight: 700;
@@ -373,7 +372,7 @@
   font-weight: 600;
 }
 
-/* Etykieta wiersza nie jest ceną — zostaje neutralna. */
+/* The row label is not a price — it stays neutral. */
 .engraving-price-table td:first-child {
   color: var(--azm-ink);
   font-weight: 600;
@@ -381,13 +380,13 @@
 }
 
 /* ---------------------------------------------------------------------------
-   Wąskie ekrany.
+   Narrow screens.
 
-   Poprzednia wersja miała tu próg 768 px, który ZMNIEJSZAŁ tekst — reguły
-   pisane pod telefon w dłoni. Kiosk na tablecie w to wpadał i dostawał
-   etykiety po 12 px, mimo że klient patrzy na ekran z ok. metra. Skala jest
-   teraz płynna (clamp w :root), więc nadpisywanie rozmiarów jest zbędne;
-   zostaje wyłącznie zmiana układu na naprawdę wąskich ekranach.
+   This block used to sit at 768px and SHRANK the text — rules written for a
+   phone held in the hand. A kiosk tablet fell into it and got 12px labels
+   even though the customer reads the screen from about a metre away. The
+   scale is fluid now (clamp in :root), so overriding sizes is unnecessary;
+   only the layout change for genuinely narrow screens remains.
 --------------------------------------------------------------------------- */
 @media (max-width: 520px) {
   .product-page {
@@ -398,8 +397,8 @@
     -webkit-overflow-scrolling: touch;
   }
 
-  /* Etykieta nad wartością — przy tej szerokości kolumna etykiet zjadałaby
-     zbyt dużo miejsca na wartość. */
+  /* Label above value — at this width a label column would eat too much of
+     the room the value needs. */
   .worktop-basic-info,
   .variant-details {
     grid-template-columns: 1fr;
