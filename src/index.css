@@ -1,11 +1,51 @@
+/* ---------------------------------------------------------------------------
+   azMEBLOPŁYT brand tokens.
+   Palette and rules come from the brandbook; the values are not here to be
+   "improved" — changing a shade is a departure from the visual identity.
+--------------------------------------------------------------------------- */
 :root {
-  font-family: system-ui, Avenir, Helvetica, Arial, sans-serif;
-  line-height: 1.5;
-  font-weight: 400;
+  --azm-red: #c21834;   /* accent — rare and deliberate, never behind a text block */
+  --azm-ink: #1b1b1b;   /* body text            (13.87:1 on sand) */
+  --azm-sand: #e8e7de;  /* background                             */
+  --azm-grey: #4d4848;  /* secondary text        (7.24:1 on sand) */
+  --azm-line: #1b1b1b;  /* rules — always 2px, uniform thickness  */
+  --azm-white: #fff;
 
-  color-scheme: light dark;
-  color: rgba(255, 255, 255, 0.87);
-  background-color: #242424;
+  /* Brandbook: "geometric elements with sharp angles are preferred". */
+  --azm-radius: 0;
+  --azm-stroke: 2px;
+
+  /* Logo clear space = monogram height. In the secondary horizontal version
+     (logo-poziome.png) the monogram is the red "O": 471 of 867px. */
+  --azm-logo-aspect: 4.752;
+  --azm-logo-clear: 0.543;
+
+  /* ---------------------------------------------------------------------
+     Kiosk type scale.
+     The customer stands in front of the tablet rather than holding it, so the
+     base step is markedly larger than in an ordinary web app. The sizes noted
+     below are the rendered size at 768px (a typical portrait tablet); the
+     fluid term scales them across roughly 600-1400px.
+
+     The rem term in every clamp() is deliberate — vw alone would break the
+     system font-size setting.
+     --------------------------------------------------------------------- */
+  --fs-label: clamp(0.95rem, 0.73rem + 0.7vw, 1.3rem);    /* labels     ~17px */
+  --fs-body: clamp(1.05rem, 0.83rem + 0.75vw, 1.45rem);   /* values     ~19px */
+  --fs-section: clamp(1.2rem, 0.97rem + 0.85vw, 1.65rem); /* headings   ~22px */
+  --fs-lead: clamp(1.4rem, 1.15rem + 1vw, 1.95rem);       /* emphasised ~26px */
+  --fs-price: clamp(1.6rem, 1.32rem + 1.15vw, 2.25rem);   /* prices     ~30px */
+  --fs-title: clamp(2rem, 1.75rem + 1.6vw, 3rem);         /* title      ~40px */
+
+  /* Spacing grows with the type so the layout does not turn cramped. */
+  --gap-row: clamp(0.5rem, 1.2vw, 0.9rem);
+  --gap-col: clamp(1rem, 2.5vw, 2rem);
+  --pad-page: clamp(1rem, 3vw, 2rem);
+
+  font-family: "Montserrat Variable", Montserrat, system-ui, sans-serif;
+  font-weight: 400;
+  line-height: 1.5;
+  color: var(--azm-ink);
 
   font-synthesis: none;
   text-rendering: optimizeLegibility;
@@ -23,56 +63,39 @@ html {
   }
 }
 
-a {
-  font-weight: 500;
-  color: #646cff;
-  text-decoration: inherit;
-}
-a:hover {
-  color: #535bf2;
-}
-
 body {
   margin: 0;
   padding: 0;
   min-width: 320px;
   min-height: 100vh;
   overflow-x: hidden;
+  color: var(--azm-ink);
+
+  /* Geometric accent: an angular motif derived from the monogram's zigzag.
+     Uniform stroke width and mitred joins, per the brandbook. */
+  background-color: var(--azm-sand);
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='560' height='420' viewBox='0 0 560 420'%3E%3Cg fill='none' stroke='%231b1b1b' stroke-opacity='.08' stroke-width='2' stroke-linejoin='miter' stroke-linecap='butt'%3E%3Cpath d='M0 268 160 108 266 214 426 54 560 188'/%3E%3Cpath d='M0 344 160 184 266 290 426 130 560 264'/%3E%3Cpath d='M0 420 160 260 266 366 426 206 560 340'/%3E%3C/g%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right bottom;
+  background-attachment: scroll;
 }
 
-h1 {
-  font-size: 3.2em;
-  line-height: 1.1;
+/* Shape reset — the browser's default rounding fights the brand. */
+button,
+input,
+select,
+textarea,
+table {
+  font: inherit;
+  color: inherit;
+  border-radius: var(--azm-radius);
 }
 
 button {
-  border-radius: 8px;
-  border: 1px solid transparent;
-  padding: 0.6em 1.2em;
-  font-size: 1em;
-  font-weight: 500;
-  font-family: inherit;
-  background-color: #1a1a1a;
   cursor: pointer;
-  transition: border-color 0.25s;
-}
-button:hover {
-  border-color: #646cff;
-}
-button:focus,
-button:focus-visible {
-  outline: 4px auto -webkit-focus-ring-color;
 }
 
-@media (prefers-color-scheme: light) {
-  :root {
-    color: #213547;
-    background-color: #ffffff;
-  }
-  a:hover {
-    color: #747bff;
-  }
-  button {
-    background-color: #f9f9f9;
-  }
+a {
+  color: var(--azm-red);
+  text-decoration: none;
 }

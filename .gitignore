@@ -26,3 +26,7 @@ dist-ssr
 *.sw?
 
 .vercel
+
+# Local Claude Code state: per-machine permission grants and agent notes.
+.claude/agent-memory/
+.claude/settings.local.json

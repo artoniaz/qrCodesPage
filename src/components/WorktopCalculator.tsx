@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useLayoutEffect, useRef } from "react";
 import type { Product } from "../types/product";
 import "./WorktopCalculator.css";
 
@@ -165,6 +165,34 @@ export default function WorktopCalculator({ product: initialProduct, thicknessVa
   };
 
   const price = calculatePrice();
+  const hasPrice = price !== null;
+
+  // The price bar is pinned to the bottom of the screen (position: fixed), so
+  // it takes no room in the layout. The page has to reserve that room or the
+  // bar would cover the last row of chips. The height is MEASURED rather than
+  // computed from the tokens: the type scale is fluid (clamp), so any calc()
+  // formula would drift on the first change of screen width.
+  const priceBarRef = useRef<HTMLDivElement>(null);
+
+  useLayoutEffect(() => {
+    const root = document.documentElement;
+    const bar = priceBarRef.current;
+    if (!bar) return;
+
+    const apply = () => {
+      root.style.setProperty("--azm-bottom-bar", `${bar.offsetHeight}px`);
+    };
+    apply();
+
+    const observer = new ResizeObserver(apply);
+    observer.observe(bar);
+    return () => {
+      observer.disconnect();
+      // Without this the reservation would survive a move to a product that
+      // has no calculator.
+      root.style.removeProperty("--azm-bottom-bar");
+    };
+  }, [hasPrice]);
 
   const getSideLabel = (side: 1 | 2) => {
     return side === 1 ? "jednostronnie zaoblony" : "obustronnie zaoblony";
@@ -268,7 +296,7 @@ export default function WorktopCalculator({ product: initialProduct, thicknessVa
 
       {/* Price display */}
       {price && (
-        <div className="price-display">
+        <div className="price-display" ref={priceBarRef}>
           <div className="price-card">
             <div className="price-details">
               <div className="price-row">

@@ -2,15 +2,21 @@
   min-height: 100vh;
   width: 100%;
   display: flex;
+  flex-direction: column;
+  /* Background and geometric accent inherited from body. */
+}
+
+.product-body {
+  flex: 1;
+  display: flex;
   justify-content: flex-start;
   align-items: flex-start;
-  padding: 25px 25px 100px 25px;
-  background-image: linear-gradient(rgba(255, 255, 255, 0.5), rgba(255, 255, 255, 0.5)), url('../assets/soft-grey-organic-leaves-background-with-text-space_1017-60373.jpg');
-  background-size: cover;
-  background-position: center;
-  background-repeat: no-repeat;
-  background-attachment: fixed;
-  overflow-y: auto;
+  /* Bottom room for the pinned price bar. The worktop calculator sets the
+     variable; on every other view it is undefined and only the ordinary page
+     padding remains. */
+  padding: var(--pad-page);
+  padding-bottom: calc(var(--pad-page) + var(--azm-bottom-bar, 0px) + 2rem);
+  box-sizing: border-box;
 }
 
 .loader-container {
@@ -37,6 +43,7 @@
 .loader::after {
   content: '';
   position: absolute;
+  /* The only circle allowed besides the monogram — functional, not decorative. */
   border-radius: 50%;
   animation: pulse 2s ease-in-out infinite;
 }
@@ -44,16 +51,15 @@
 .loader::before {
   width: 60px;
   height: 60px;
-  border: 3px solid #667eea;
-  box-shadow: 0 0 20px rgba(102, 126, 234, 0.3);
+  border: 3px solid var(--azm-sand);
 }
 
 .loader::after {
   width: 60px;
   height: 60px;
   border: 3px solid transparent;
-  border-top-color: #764ba2;
-  border-right-color: #764ba2;
+  border-top-color: var(--azm-red);
+  border-right-color: var(--azm-red);
   animation: spin 1.5s cubic-bezier(0.68, -0.55, 0.265, 1.55) infinite;
 }
 
@@ -78,28 +84,30 @@
 }
 
 .loader-container p {
-  color: #444;
-  font-size: 1.1rem;
+  color: var(--azm-grey);
+  font-size: var(--fs-body);
   margin: 0;
   font-weight: 500;
   letter-spacing: 0.3px;
 }
 
 .error-container {
-  background: white;
+  background: var(--azm-white);
   padding: 2rem;
-  border-radius: 12px;
-  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+  border: var(--azm-stroke) solid var(--azm-line);
+  border-radius: var(--azm-radius);
   text-align: center;
 }
 
 .error-container h2 {
-  color: #e53e3e;
+  color: var(--azm-red);
+  font-size: var(--fs-section);
   margin-top: 0;
 }
 
 .error-container p {
-  color: #333;
+  color: var(--azm-grey);
+  font-size: var(--fs-body);
 }
 
 .product-container {
@@ -114,9 +122,9 @@
 }
 
 .product-title {
-  color: #000;
-  margin: 0 0 0.75rem 0;
-  font-size: 2rem;
+  color: var(--azm-ink);
+  margin: 0 0 var(--gap-row) 0;
+  font-size: var(--fs-title);
   font-weight: 700;
   text-transform: uppercase;
   letter-spacing: -0.01em;
@@ -127,51 +135,54 @@
 .product-info {
   display: flex;
   flex-direction: column;
-  gap: 0.5rem;
-  margin-bottom: 1rem;
+  /* Tighter than --gap-col: at kiosk type sizes these three sections already
+     read as distinct blocks, and every spare gap pushes the price below the
+     fold. */
+  gap: var(--gap-row);
+  margin-bottom: var(--gap-col);
 }
 
 .info-section {
   display: flex;
   flex-direction: column;
-  gap: 0.25rem;
+  gap: 0.1rem;
 }
 
 .info-section.description {
-  margin-top: 0.5rem;
+  margin-top: 0.25rem;
 }
 
 .info-label {
-  color: #444;
-  font-size: 0.875rem;
+  color: var(--azm-grey);
+  font-size: var(--fs-label);
   font-weight: 400;
   text-align: left;
 }
 
 .info-value {
-  color: #000;
-  font-size: 1.5rem;
+  color: var(--azm-ink);
+  font-size: var(--fs-lead);
   font-weight: 700;
   line-height: 1.2;
   text-align: left;
 }
 
 .info-section.description .info-value {
-  color: #444;
-  font-size: 0.95rem;
+  color: var(--azm-grey);
+  font-size: var(--fs-body);
   font-weight: 400;
   line-height: 1.4;
 }
 
 .variants-section {
-  margin-top: 1rem;
+  margin-top: var(--gap-col);
   border-top: none;
   padding-top: 0.5rem;
 }
 
 .variants-title {
-  color: #000;
-  font-size: 1.125rem;
+  color: var(--azm-ink);
+  font-size: var(--fs-section);
   font-weight: 600;
   margin: 0 0 1rem 0;
 }
@@ -195,81 +206,94 @@
 }
 
 .variant-title {
-  color: #000;
-  font-size: 0.875rem;
+  color: var(--azm-ink);
+  font-size: var(--fs-label);
   font-weight: 600;
   text-align: left;
   display: block;
   width: 100%;
 }
 
+/* ---------------------------------------------------------------------------
+   Label / value rows.
+
+   The grid lives on the container and the rows are `display: contents`, so
+   every label lands in a single `max-content` column. That column sizes
+   itself to the longest label instead of being pinned to a pixel width — at
+   the previous 110/140/175px, "Forma sprzedaży:" and "Dostępne szerokości:"
+   already wrapped onto two lines, and larger type would have wrapped more.
+--------------------------------------------------------------------------- */
+.worktop-basic-info,
 .variant-details {
-  display: flex;
-  flex-direction: column;
-  gap: 0.25rem;
+  display: grid;
+  grid-template-columns: max-content 1fr;
+  column-gap: var(--gap-col);
+  row-gap: var(--gap-row);
+  align-items: baseline;
 }
 
-.variant-row {
-  display: grid;
-  grid-template-columns: 140px 1fr;
-  align-items: baseline;
-  gap: 0.5rem;
+.worktop-basic-info .info-row,
+.variant-details .variant-row {
+  display: contents;
+}
+
+/* The group heading and the price table are direct grid children — they must
+   span both columns or they would land in the label column. */
+.worktop-basic-info > *:not(.info-row) {
+  grid-column: 1 / -1;
+}
+
+.worktop-basic-info {
+  margin-top: 0.5rem;
+  padding: var(--gap-col) 0;
+  border-bottom: var(--azm-stroke) solid var(--azm-line);
 }
 
 .variant-label {
-  color: #444;
-  font-size: 1rem;
+  color: var(--azm-grey);
+  font-size: var(--fs-label);
   font-weight: 400;
-  flex-shrink: 0;
   text-align: left;
 }
 
 .variant-value {
-  color: #000;
-  font-size: 1rem;
+  color: var(--azm-ink);
+  font-size: var(--fs-body);
   font-weight: 400;
   text-align: left;
   word-break: break-word;
 }
 
+/* On this page red is carried by the price alone — a rare, deliberate accent. */
 .variant-value.price {
+  color: var(--azm-red);
   font-weight: 700;
-  font-size: 1.125rem;
-}
-
-.worktop-basic-info {
-  display: flex;
-  flex-direction: column;
-  gap: 0.5rem;
-  margin-top: 0.5rem;
-  padding: 0.75rem 0;
-  border-bottom: 1px solid rgba(0, 0, 0, 0.1);
-}
-
-.worktop-basic-info .info-row {
-  display: grid;
-  grid-template-columns: 140px 1fr;
-  align-items: baseline;
-  gap: 0.5rem;
+  font-size: var(--fs-price);
 }
 
 .worktop-basic-info .info-label {
-  color: #444;
-  font-size: 0.875rem;
+  color: var(--azm-grey);
+  font-size: var(--fs-label);
   font-weight: 400;
   text-align: left;
 }
 
 .info-value-simple {
-  color: #000;
-  font-size: 0.875rem;
+  color: var(--azm-ink);
+  font-size: var(--fs-body);
   font-weight: 400;
   text-align: left;
 }
 
+.info-value-accent {
+  color: var(--azm-red);
+  font-weight: 700;
+  font-size: var(--fs-price);
+}
+
 .front-header {
-  color: #000;
-  font-size: 2rem;
+  color: var(--azm-ink);
+  font-size: var(--fs-title);
   font-weight: 700;
   text-align: left;
 }
@@ -288,19 +312,14 @@
    label, where only the second block carries a bold heading. */
 .info-group-title {
   margin: 0 0 0.35rem;
-  color: #000;
-  font-size: 1rem;
+  color: var(--azm-ink);
+  font-size: var(--fs-section);
   font-weight: 700;
   text-align: left;
 }
 
 .front-info:has(.info-group-title) {
-  padding-top: 0.75rem;
-}
-
-/* "Forma sprzedaży:" is wider than any label the other views use. */
-.sheet-front-group .info-row {
-  grid-template-columns: 155px 1fr;
+  padding-top: var(--gap-col);
 }
 
 .sheet-info {
@@ -315,135 +334,81 @@
 .engraving-price-table table {
   width: 100%;
   border-collapse: collapse;
-  background: rgba(255, 255, 255, 0.5);
-  border-radius: 8px;
-  overflow: hidden;
+  background: var(--azm-white);
+  border: var(--azm-stroke) solid var(--azm-line);
+  border-radius: var(--azm-radius);
 }
 
 .engraving-price-table th,
 .engraving-price-table td {
-  padding: 0.75rem 1rem;
+  padding: var(--gap-row) var(--gap-col);
   text-align: left;
-  border-bottom: 1px solid rgba(0, 0, 0, 0.1);
+  border-bottom: var(--azm-stroke) solid var(--azm-line);
 }
 
 .engraving-price-table thead {
-  background: rgba(0, 0, 0, 0.05);
+  background: var(--azm-sand);
 }
 
 .engraving-price-table th {
   font-weight: 600;
-  color: #000;
-  font-size: 0.875rem;
+  color: var(--azm-ink);
+  font-size: var(--fs-label);
 }
 
+/* Price cells — the only accent in the table. */
 .engraving-price-table td {
-  color: #000;
-  font-size: 0.875rem;
+  color: var(--azm-red);
+  font-weight: 700;
+  font-size: var(--fs-price);
 }
 
 .engraving-price-table tbody tr:last-child td {
   border-bottom: none;
 }
 
-.engraving-price-table td:first-child,
 .engraving-price-table th:first-child {
   font-weight: 600;
 }
 
-@media (max-width: 768px) {
+/* The row label is not a price — it stays neutral. */
+.engraving-price-table td:first-child {
+  color: var(--azm-ink);
+  font-weight: 600;
+  font-size: var(--fs-body);
+}
+
+/* ---------------------------------------------------------------------------
+   Narrow screens.
+
+   This block used to sit at 768px and SHRANK the text — rules written for a
+   phone held in the hand. A kiosk tablet fell into it and got 12px labels
+   even though the customer reads the screen from about a metre away. The
+   scale is fluid now (clamp in :root), so overriding sizes is unnecessary;
+   only the layout change for genuinely narrow screens remains.
+--------------------------------------------------------------------------- */
+@media (max-width: 520px) {
   .product-page {
-    padding: 0;
     min-height: 100vh;
     height: auto;
-    overflow-y: auto;
     overflow-x: hidden;
     -webkit-overflow-scrolling: touch;
-    background-attachment: scroll;
   }
 
-  .product-container {
-    padding: 15px;
-    padding-bottom: 50px;
-    height: auto;
-    max-height: none;
-    min-height: 100%;
-  }
-
-  .product-title {
-    font-size: 1.5rem;
-    margin-bottom: 0.5rem;
-  }
-
-  .product-info {
-    gap: 0.35rem;
-    margin-bottom: 0.75rem;
-  }
-
-  .info-value {
-    font-size: 1.7rem;
-  }
-
-  .info-section.description .info-value {
-    font-size: 0.8rem;
-  }
-
-  .variants-section {
-    margin-top: 0.5rem;
-    padding-top: 0.25rem;
-  }
-
-  .variants-title {
-    font-size: 1rem;
-    margin-bottom: 0.5rem;
-  }
-
-  .variant-card {
-    margin-bottom: 0.75rem;
-    padding-bottom: 0.25rem;
-  }
-
-  .variant-header {
-    margin-bottom: 0.35rem;
-  }
-
-  .variant-title {
-    font-size: 0.75rem;
-  }
-
+  /* Label above value — at this width a label column would eat too much of
+     the room the value needs. */
+  .worktop-basic-info,
   .variant-details {
-    gap: 0.2rem;
+    grid-template-columns: 1fr;
+    row-gap: 0.2rem;
   }
 
-  .variant-row {
-    gap: 0.5rem;
-    grid-template-columns: 110px 1fr;
-  }
-
-  .variant-label,
-  .variant-value {
-    font-size: 0.75rem;
-  }
-
-  .variant-value.price {
-    font-size: 0.8rem;
-  }
-
-  .variant-value {
-    text-align: left;
-  }
-
-  .info-group-title {
-    font-size: 0.9rem;
+  .worktop-basic-info .info-row + .info-row .info-label,
+  .variant-details .variant-row + .variant-row .variant-label {
+    margin-top: var(--gap-row);
   }
 
   .engraving-price-table {
     overflow-x: auto;
-  }
-
-  .engraving-price-table th,
-  .engraving-price-table td {
-    padding: 0.5rem 0.75rem;
-    font-size: 0.75rem;
   }
 }

@@ -1,124 +1,140 @@
 .worktop-calculator {
   background: transparent;
-  border-radius: 12px;
-  padding: 24px;
-  margin-top: 24px;
+  border-radius: var(--azm-radius);
+  padding: var(--gap-col) 0 0;
+  margin-top: var(--gap-col);
 }
 
 .calculator-header {
-  margin-bottom: 24px;
+  margin-bottom: var(--gap-col);
 }
 
 .calculator-header h3 {
   margin: 0;
-  font-size: 20px;
-  color: #2c3e50;
+  font-size: var(--fs-section);
+  font-weight: 700;
+  color: var(--azm-ink);
 }
 
 .calculator-options {
   display: flex;
   flex-direction: column;
-  gap: 20px;
-  margin-bottom: 24px;
+  gap: var(--gap-col);
+  margin-bottom: var(--gap-col);
 }
 
 .option-group {
   display: flex;
   flex-direction: column;
-  gap: 10px;
+  gap: var(--gap-row);
 }
 
 .option-label {
   font-weight: 600;
-  color: #2c3e50;
-  font-size: 15px;
-  margin-bottom: 4px;
+  color: var(--azm-ink);
+  font-size: var(--fs-label);
 }
 
 .chip-selector {
   display: flex;
   flex-wrap: wrap;
-  gap: 10px;
+  gap: var(--gap-row);
 }
 
 .chip {
-  padding: 10px 20px;
-  border: 2px solid #ddd;
-  border-radius: 24px;
-  font-size: 14px;
+  /* The kiosk is finger-operated — 48px is the lower bound for a comfortable
+     touch target. */
+  min-height: 48px;
+  padding: 0.6em 1.1em;
+  border: var(--azm-stroke) solid var(--azm-line);
+  border-radius: var(--azm-radius);
+  font-size: var(--fs-body);
   font-weight: 500;
-  background: #fff;
-  color: #2c3e50;
+  background: var(--azm-white);
+  color: var(--azm-ink);
   cursor: pointer;
-  transition: all 0.2s ease;
+  transition: background-color 0.2s ease, color 0.2s ease;
   white-space: nowrap;
 }
 
 .chip:hover {
-  border-color: #3498db;
-  background: #f0f8ff;
-  transform: translateY(-1px);
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  background: var(--azm-sand);
 }
 
 .chip-active {
-  border-color: #3498db;
-  background: #3498db;
-  color: #fff;
-  box-shadow: 0 2px 6px rgba(52, 152, 219, 0.3);
+  border-color: var(--azm-red);
+  background: var(--azm-red);
+  color: var(--azm-white);
 }
 
 .chip-active:hover {
-  background: #2980b9;
-  border-color: #2980b9;
+  background: var(--azm-red);
+  border-color: var(--azm-red);
 }
 
+/* Pinned to the bottom of the screen: the price is the number the customer
+   came for, so it must not fall below the fold while options are being
+   chosen. Room is reserved by .product-body through --azm-bottom-bar, whose
+   value this calculator measures. */
 .price-display {
-  margin-top: 24px;
+  position: fixed;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 10;
+  padding: 0 var(--pad-page) var(--pad-page);
+  background: var(--azm-sand);
+  border-top: var(--azm-stroke) solid var(--azm-red);
+}
+
+.price-display .price-card {
+  /* Same axis as .product-container — the bar must not drift sideways. */
+  max-width: 900px;
+  margin: 0 auto;
+  border-top: none;
+  /* Tighter vertically than the in-flow card: the bar occupies screen height
+     permanently, so every spare pixel of padding is a real cost. */
+  padding: var(--gap-row) var(--gap-col);
 }
 
 .price-card {
-  background: #fff;
-  border: 2px solid #3498db;
-  border-radius: 10px;
-  padding: 24px;
-  box-shadow: 0 2px 8px rgba(52, 152, 219, 0.15);
+  background: var(--azm-white);
+  border: var(--azm-stroke) solid var(--azm-red);
+  border-radius: var(--azm-radius);
+  padding: var(--gap-col);
 }
 
 .price-details {
   display: flex;
   flex-direction: column;
-  gap: 8px;
+  gap: var(--gap-row);
 }
 
 .price-row {
   display: flex;
   justify-content: space-between;
-  align-items: center;
-  font-size: 14px;
-  color: #555;
+  align-items: baseline;
+  gap: var(--gap-col);
+  font-size: var(--fs-body);
+  color: var(--azm-grey);
 }
 
 .price-row.gross {
-  font-size: 16px;
   font-weight: 600;
-  color: #2c3e50;
-  padding-top: 8px;
-  border-top: 1px solid #eee;
+  color: var(--azm-ink);
+  padding-top: var(--gap-row);
+  border-top: var(--azm-stroke) solid var(--azm-line);
 }
 
 .price-value {
   font-weight: 600;
-  color: #27ae60;
+  color: var(--azm-ink);
+  white-space: nowrap;
 }
 
+/* The gross price is the number the customer came here for. */
 .price-row.gross .price-value {
-  font-size: 18px;
-  color: #27ae60;
-}
-
-@media (max-width: 768px) {
-  .worktop-calculator {
-    padding: 16px;
-  }
+  font-size: var(--fs-price);
+  font-weight: 700;
+  color: var(--azm-red);
 }
