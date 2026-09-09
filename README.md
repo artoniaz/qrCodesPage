@@ -1,73 +1,103 @@
-# React + TypeScript + Vite
+# azMEBLOPŁYT — product lookup kiosk
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+A tablet in the showroom. The customer scans the QR code on a product sample
+and the screen shows that product's specification and current price. Nothing
+else — no navigation, no search, no cart.
 
-Currently, two official plugins are available:
+That single purpose explains most of the decisions below.
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Babel](https://babeljs.io/) (or [oxc](https://oxc.rs) when used in [rolldown-vite](https://vite.dev/guide/rolldown)) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
+## How it works
 
-## React Compiler
-
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
-
-## Expanding the ESLint configuration
-
-If you are developing a production application, we recommend updating the configuration to enable type-aware lint rules:
-
-```js
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
-
-      // Remove tseslint.configs.recommended and replace with this
-      tseslint.configs.recommendedTypeChecked,
-      // Alternatively, use this for stricter rules
-      tseslint.configs.strictTypeChecked,
-      // Optionally, add this for stylistic rules
-      tseslint.configs.stylisticTypeChecked,
-
-      // Other configs...
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
+```
+QR scan (keyboard-wedge scanner)
+  └─ useBarcodeScanner  →  /product/:id
+       └─ /api/product   →  Airtable
 ```
 
-You can also install [eslint-plugin-react-x](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-x) and [eslint-plugin-react-dom](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-dom) for React-specific lint rules:
+The scanner behaves as a keyboard. `src/hooks/useBarcodeScanner.ts` listens for
+keystrokes on `window`, and on Enter navigates to the product route.
 
-```js
-// eslint.config.js
-import reactX from 'eslint-plugin-react-x'
-import reactDom from 'eslint-plugin-react-dom'
+Airtable is reached **only** through the serverless functions in `api/`. The
+token is server-side and must stay there: it was once exposed in the client
+bundle through a `VITE_` prefix, and that must not happen again. Any future
+feature needing a secret goes through an `api/` proxy.
 
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
-      // Enable lint rules for React
-      reactX.configs['recommended-typescript'],
-      // Enable lint rules for React DOM
-      reactDom.configs.recommended,
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
+Four product views are chosen by the record's own `kind` field, not by the
+route: worktop (with a price calculator), front, sheet + front, and a plain
+product.
+
+## Running locally
+
+Two terminals:
+
+```bash
+npm run dev:api   # :3000 — the api/ functions against real Airtable
+npm run dev       # :5173 — the app
 ```
+
+Copy `.env.example` to `.env` and fill in three values:
+
+```
+AIRTABLE_TOKEN=
+AIRTABLE_BASE_ID=
+AIRTABLE_FRONT_BASE_ID=
+```
+
+`scripts/dev-api.ts` runs the real handlers from `api/` on a small `node:http`
+adapter, so no Vercel CLI is needed. It is read-only by construction:
+`withGuards` accepts `GET` only and there is no writing call to Airtable
+anywhere in the codebase.
+
+Port 3000 is a common collision. `PORT=3001 npm run dev:api` moves the server,
+but the proxy target in `vite.config.ts` is hardcoded and has to move with it.
+
+## Scripts
+
+| | |
+|---|---|
+| `npm run dev` | Vite dev server |
+| `npm run dev:api` | local `api/` functions (see above) |
+| `npm run build` | `tsc -b` across four projects, then `vite build` |
+| `npm run lint` | ESLint over `**/*.{ts,tsx}` |
+| `npm run preview` | serve the production build |
+
+There are no tests and no CSS linting. Visual changes are verified by running
+the app.
+
+## Brand
+
+The visual identity follows the azMEBLOPŁYT brandbook. It is not in this
+repository; what it mandates lives as tokens at the top of `src/index.css`:
+
+- **`#C21834`** red — a rare, deliberate accent. In this app it is carried by
+  prices, the header rule and the scan line, and nothing else.
+- **`#1B1B1B`** ink and **`#E8E7DE`** sand — the base pair.
+- Montserrat, self-hosted via `@fontsource-variable/montserrat`. Do not move it
+  back to Google Fonts: the CSP in `vercel.json` blocks external stylesheets
+  and font files, which is why the app silently rendered in `system-ui` before.
+- Sharp corners (`--azm-radius: 0`), uniform 2px strokes, no shadows and no
+  gradients.
+
+`src/assets/logo-poziome.png` is the secondary horizontal version, which the
+brandbook assigns to web headers. Clear space around it is derived from
+`--azm-logo-aspect` and `--azm-logo-clear` rather than hand-tuned, because the
+rule is "the height of the monogram" and the monogram is 54% of the logotype
+height in this version.
+
+## Kiosk constraints
+
+The target device is a portrait tablet at roughly 768px CSS width, operated by
+finger, read from about a metre away by a standing customer. Hence:
+
+- a fluid type scale (`--fs-*` in `src/index.css`) sized for that distance,
+  rather than breakpoints — an earlier `max-width: 768px` block meant for
+  phones was *shrinking* the text on exactly this device;
+- 48px minimum touch targets on the calculator chips;
+- the price pinned to the bottom of the screen on the worktop view, because it
+  is the one number the customer came for.
+
+## Deployment
+
+Vercel. `vercel.json` holds the SPA rewrite and the security headers, including
+a strict CSP — `default-src 'self'` with no external origins. Everything the
+page needs is served from its own origin.
