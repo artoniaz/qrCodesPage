@@ -4,7 +4,6 @@
   display: flex;
   flex-direction: column;
   /* Background and geometric accent inherited from body. */
-  overflow-y: auto;
 }
 
 .product-body {
@@ -392,7 +391,6 @@
   .product-page {
     min-height: 100vh;
     height: auto;
-    overflow-y: auto;
     overflow-x: hidden;
     -webkit-overflow-scrolling: touch;
   }
