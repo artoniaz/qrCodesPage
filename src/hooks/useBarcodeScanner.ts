@@ -1,11 +1,12 @@
 import { useEffect, useRef } from "react";
 import { useNavigate, type NavigateFunction } from "react-router-dom";
+import { markScanSeen } from "../lib/kiosk";
 
 // A keyboard-wedge scanner (Zebra) types the whole payload as a burst of
 // keystrokes and finishes with Enter. Human typing is far slower, so a gap
 // larger than this between keys is treated as the start of a new entry. This
-// keeps stray human input (e.g. the worktop calculator fields) from polluting
-// the scan buffer.
+// keeps stray human input from polluting the scan buffer, and is also what
+// tells the kiosk apart from a customer's phone (see lib/kiosk).
 const INTER_KEY_TIMEOUT_MS = 50;
 
 // Ignore obviously-too-short buffers so a single accidental keypress + Enter
@@ -69,6 +70,17 @@ export default function useBarcodeScanner() {
         const code = buffer.current;
         buffer.current = "";
         if (code.length >= MIN_CODE_LENGTH) {
+          // A burst this fast means a scanner, which means the kiosk. Set it
+          // before navigating, and outside handleScan, so a payload that
+          // turns out to be unusable still counts as proof of a scanner.
+          markScanSeen();
+
+          // The Enter that ends a scan would otherwise run its default action
+          // once this handler returns: a click on whatever still has focus —
+          // the chip the customer tapped last, or the idle overlay's button.
+          // A scan navigates, and does nothing else.
+          event.preventDefault();
+
           handleScan(code, navigate);
         }
         return;
