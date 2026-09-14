@@ -96,6 +96,34 @@ finger, read from about a metre away by a standing customer. Hence:
 - the price pinned to the bottom of the screen on the worktop view, because it
   is the one number the customer came for.
 
+### Kiosk mode
+
+Left alone, the kiosk sits on the previous customer's product with nothing
+saying another sample can be scanned. So after 90 seconds with no activity a
+product page warns for 10 seconds — a countdown the customer can cancel by
+touching the screen — and then returns to the welcome screen, which does say
+it (`KioskGuard`, `useIdleTimeout`).
+
+This is deliberately *not* shared with a customer's phone. There it would be
+sabotage: the customer scanned a sample with their camera, is reading the
+spec, and the page would vanish onto a screen asking them to scan a QR code
+they have no scanner for.
+
+So the timer runs only when `isKiosk()` (`src/lib/kiosk.ts`) says so:
+
+- **`/?kiosk=1`** — the URL the kiosk app launches the tablet at every
+  morning. The flag persists in `localStorage` under `azm:kiosk`.
+- **`/?kiosk=0`** — the escape hatch, for a device marked by mistake. There is
+  no button for this on purpose: a button a customer could press is a button a
+  customer will press.
+- **A keyboard-wedge scan** promotes the current session to kiosk mode even
+  without the flag, since no phone can type a whole URL in a few milliseconds.
+  Session-only, deliberately: it is a fallback for a tablet that was set up
+  without the query parameter, not a second source of truth.
+
+The tablet's screen is kept lit by the kiosk app's own "never sleep" setting,
+so there is no Wake Lock code here and there should not be.
+
 ## Deployment
 
 Vercel. `vercel.json` holds the SPA rewrite and the security headers, including

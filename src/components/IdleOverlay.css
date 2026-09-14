@@ -1,0 +1,107 @@
+.idle-overlay {
+  position: fixed;
+  inset: 0;
+  /* Above the scan cue (12), the scroll chevron (11) and the price bar (10). */
+  z-index: 100;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: var(--pad-page);
+  box-sizing: border-box;
+
+  /* Flat sand with a little alpha — no gradient, no shadow. Nearly opaque so
+     the message reads from a metre away, but the page stays faintly visible
+     so it is clear nothing has been thrown away yet. */
+  background: rgb(232 231 222 / 0.94);
+  animation: idle-in 0.2s ease-out both;
+}
+
+.idle-card {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--gap-row);
+  width: 100%;
+  max-width: 640px;
+  padding: var(--gap-col);
+  box-sizing: border-box;
+
+  background: var(--azm-white);
+  border: var(--azm-stroke) solid var(--azm-line);
+  border-radius: var(--azm-radius);
+  text-align: center;
+}
+
+.idle-title {
+  margin: 0;
+  font-size: var(--fs-lead);
+  font-weight: 700;
+  line-height: 1.15;
+}
+
+.idle-count {
+  margin: 0;
+  font-size: var(--fs-section);
+  color: var(--azm-grey);
+}
+
+/* The one accent on this screen: the number the whole overlay is about. */
+.idle-number {
+  color: var(--azm-red);
+  font-size: var(--fs-title);
+  font-weight: 700;
+  /* Without this the card visibly jiggles on 10 → 9. */
+  font-variant-numeric: tabular-nums;
+}
+
+/* Neutral on purpose — a red button beside the red number would be two
+   accents, and the whole screen is already a "stay" target anyway. */
+.idle-stay {
+  min-height: 64px;
+  margin-top: var(--gap-row);
+  padding: 0.6em 1.6em;
+  border: var(--azm-stroke) solid var(--azm-line);
+  border-radius: var(--azm-radius);
+  background: var(--azm-white);
+  color: var(--azm-ink);
+  font-size: var(--fs-body);
+  font-weight: 500;
+}
+
+.idle-stay:active {
+  background: var(--azm-sand);
+}
+
+.idle-hint {
+  margin: 0;
+  font-size: var(--fs-label);
+  color: var(--azm-grey);
+}
+
+/* Carried by assistive technology only — the visible copy says the same. */
+.idle-announce {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  margin: -1px;
+  padding: 0;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
+
+@keyframes idle-in {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .idle-overlay {
+    animation: none;
+  }
+}
