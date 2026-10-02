@@ -17,7 +17,7 @@ export interface Product {
   structure: string;
   name: string;
   sellUnit: string;
-  price: number;
+  price: number; // net, per piece — VAT is added on display
   category: string;
   description: string;
   code: string;
@@ -367,7 +367,11 @@ export function parseAirtableRecord(record: AirtableRecord): Product {
     structure: (f.structure as string) || '',
     name: (f.name as string) || '',
     sellUnit: (f.sellUnit as string) || '',
-    price: (f.price as number) || 0,
+    // Net price per piece; the page adds VAT. {cena_netto} is the unified field
+    // name. The akryl / mirror / MDF metal table used to send a gross {price},
+    // which got VAT added twice. {price} stays as a fallback for board tables
+    // that have not been renamed yet and still hold a net value there.
+    price: parsePrice(f.cena_netto) ?? parsePrice(f.price) ?? 0,
     category,
     description: (f.description as string) || '',
     code: (f.code as string) || '',
