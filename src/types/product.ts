@@ -13,7 +13,7 @@ export interface Product {
   structure: string;
   name: string;
   sellUnit: string;
-  price: number;
+  price: number; // net, per piece — VAT is added on display
   category: string;
   description: string;
   code: string;
